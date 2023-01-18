@@ -15,11 +15,6 @@
 devtools::install_deps(upgrade = "never")
 
 
-## Load Project Addins (R Functions and Packages) ----
-
-devtools::load_all(here::here())
-
-
 ## Global Variables ----
 
 # You can list global variables here (or in a separate R script)
