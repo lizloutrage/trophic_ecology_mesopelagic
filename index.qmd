@@ -1,0 +1,137 @@
+---
+title: "index"
+format: html
+editor: visual
+theme: minty
+toc: true
+toc-title: Sections
+toc-location: left
+---
+
+
+## 1. SIBER (Jackson et al., 2011)
+
+### Group metrics
+
+```{r}
+#| echo: false
+targets::tar_load(group_metrics)
+knitr::kable(group_metrics)
+
+```
+
+### Community metrics
+
+```{r}
+#| echo: false
+targets::tar_load(community_metrics)
+knitr::kable(community_metrics)
+
+```
+
+
+## 2. Trophic diversity indices (Cucherousset et al, 2015)
+
+### Z0508 - 25m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0508)
+targets::tar_load(species_status_biomass_Z0508)
+targets::tar_load(di_Z0508)
+kableExtra::kbl(di_Z0508)
+
+```
+
+![Trophic diversity indices station Z0508](Z0508_d13C_d15N.jpeg){width=580}
+
+
+### Z0492 - 370m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0492)
+targets::tar_load(species_status_biomass_Z0492)
+targets::tar_load(di_Z0492)
+kableExtra::kbl(di_Z0492)
+
+```
+
+![Trophic diversity indices station Z0492](Z0492_d13C_d15N.jpeg){width=580}  
+
+
+### Z0512 - 555m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0512)
+targets::tar_load(species_status_biomass_Z0512)
+targets::tar_load(di_Z0512)
+kableExtra::kbl(di_Z0512)
+
+```
+
+![Trophic diversity indices station Z0512](Z0512_d13C_d15N.jpeg){width=580}
+
+### Z0503 - 715m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0503)
+targets::tar_load(species_status_biomass_Z0503)
+targets::tar_load(di_Z0503)
+kableExtra::kbl(di_Z0503)
+```
+
+![Trophic diversity indices station Z0503](Z0503_d13C_d15N.jpeg){width=580}
+
+### Z0518 - 1000m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0518)
+targets::tar_load(species_status_biomass_Z0518)
+targets::tar_load(di_Z0518)
+kableExtra::kbl(di_Z0518)
+```
+
+![Trophic diversity indices station Z0518](Z0518_d13C_d15N.jpeg){width=580}
+
+### Z0524 - 1010m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0524)
+targets::tar_load(species_status_biomass_Z0524)
+targets::tar_load(di_Z0524)
+kableExtra::kbl(di_Z0524)
+```
+
+![Trophic diversity indices station Z0524](Z0524_d13C_d15N.jpeg){width=580}
+
+### Z0497 - 1335m
+
+-   Variation coefficients (intraspecific variability)
+
+```{r}
+#| echo: false
+targets::tar_load(individuals_si_Z0497)
+targets::tar_load(species_status_biomass_Z0497)
+targets::tar_load(di_Z0497)
+kableExtra::kbl(di_Z0497)
+
+```
+
+![Trophic diversity indices station Z0492](Z0497_d13C_d15N.jpeg){width=580}
