@@ -14,23 +14,33 @@ library(rcdd)
 tar_source()
 
 list(
-  # # Read isotope raw data ----
-  #  tar_target(isotope_data, utils::read.csv(here::here("data","raw-data", "isotopic_data_evhoe_2021.csv"),sep = ";", header = T,dec = ",")),
-  # 
-  # # Conserve only fish species ----
-  #  tar_target(isotope_data_fish, subset(isotope_data, species != "Meganyctiphanes_norvegica")),
-  # 
-  # # Create a matrix in SIBER format ----
-  #  tar_target(siber_data, prepare_siber_data(isotope_data_fish)),
-  #  tar_target(siber_data.df, as.data.frame(siber_data)),
-  # 
-  #  # Caculate group metrics ----
-  #   tar_target(group_metrics, print_group_metrics(siber_data.df)),
-  # 
-  # # Caculate community metrics ----
-  #   tar_target(community_metrics, print_community_metrics(siber_data.df)),
+  # SIBER ----
+  
+  # Read isotope raw data 
+   tar_target(isotope_data, utils::read.csv(here::here("data","raw-data", "isotopic_data_2021.csv"),sep = ";", header = T,dec = ",")),
 
+  # Conserve only fish species 
+   tar_target(isotope_data_fish, subset(isotope_data, species != "Meganyctiphanes_norvegica")),
 
+  # Create a matrix in SIBER format
+   tar_target(siber_data, prepare_siber_data(isotope_data_fish)),
+   tar_target(siber_data.df, as.data.frame(siber_data)),
+
+  # Caculate group metrics ----
+    tar_target(group_metrics, print_group_metrics(siber_data.df)),
+
+  # Caculate community metrics ----
+    tar_target(community_metrics, print_community_metrics(siber_data.df)),
+
+  # Plot ellipses
+   tar_target(ellipse_Z0492, plot_Z0492(siber_data.df)),
+   tar_target(ellipse_Z0497, plot_Z0497(siber_data.df)),
+   tar_target(ellipse_Z0503, plot_Z0503(siber_data.df)),
+   tar_target(ellipse_Z0508, plot_Z0508(siber_data.df)),
+   tar_target(ellipse_Z0512, plot_Z0512(siber_data.df)),
+   tar_target(ellipse_Z0518, plot_Z0518(siber_data.df)),
+   tar_target(ellipse_Z0524, plot_Z0524(siber_data.df)),
+  
  # load derived data ----
  # Z0492
  tar_target(individuals_si_Z0492, utils::read.csv(here::here("data","derived-data", "individuals_si_Z0492.csv"), sep = ";")),
@@ -70,8 +80,8 @@ list(
  tar_target(di_Z0524, diversity_indices_Z0524(individuals_si_Z0524, species_status_biomass_Z0524))
  )
 
-### essai SIBER
-# isotope_data <-  utils::read.csv(here::here("data","raw-data", "isotopic_data_evhoe_2021.csv"),
+# ## essai SIBER
+# isotope_data <-  utils::read.csv(here::here("data","raw-data", "isotopic_data_2021.csv"),
 #                                  sep = ";", header = T,dec = ",")
 # isotope_data_fish <- subset(isotope_data, species != "Meganyctiphanes_norvegica")
 # siber_data <- prepare_siber_data(isotope_data_fish)

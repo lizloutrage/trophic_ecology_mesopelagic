@@ -1,58 +1,73 @@
+##################################################################################################################################################################
+##################################################################################################################################################################
 # 'si_div': a script with 4 R functions: 'meanSI_group', 'scaleSI_range01', 'IDiversity', 'IOverlap'		 
 # 			for computing isotopic diversity indices based on stable isotope values.
+#
+# The help of each function is provided above its script.
+#
+# Examples of how to use these functions are provided in "examples" R script file
 #
 # after the article by Julien Cucherousset & Sébastien Villéger
 #
 # Author: Sébastien Villéger: sebastien.villeger@univ-montp2.fr
 #
 # IMPORTANT: The R libraries 'geometry', 'ape' and 'rcdd' need to be installed
+#																																 
+##################################################################################################################################################################
+##################################################################################################################################################################
 
+# loading libraries	
+require(geometry)
+require(ape)
+require(rcdd)
 
-#' meanSI_group
-#'function to compute mean Stable Isotope values for different elements at the group level using individual stable isotope values
-#'
-#' @param dataset,  a dataframe or matrix with at least 3 columns: 
-#' 	$ 'group': a numeric or character variable with the identity (e.g. life stage, sex, population, species) of each individual
-#' 	$ 'd13C', 'd15N', 'dD' and/or 'd34S': at least two numeric variables with stable isotope value f each individual
-#' 	$ 'weight': an optional numeric variable with weight (e.g. body mass, dry mass) of each individual
-#'
-#' @return a matrix with for each group of individuals (rows): number of individuals ('n'), mean stable isotope value (e.g. 'd13C', 'd15N'), 
-#' standard deviation of stable isotope values (e.g. 'd13C_sd', 'd15N_sd'), and total weight of each group ('weight') [NA if no weight as input].
-#' NB: This matrix can be used directly as an INPUT for the subsequent functions: 'scaleSI_rge01', 'IDiversity' and 'IOverlap'
-#' @export
-#'
-#' @examples
-
-meanSI_group <- function(dataset) {
-  
 # codes for stable isotope ratios
-nm_si <- c("d13C", "d15N", "dD", "d34S")
+nm_si<-c("d13C","d15N","dD","d34S")
+
+##################################################################################################################################################################
+##################################################################################################################################################################
+#
+# 'meanSI_group': function to compute mean Stable Isotope values for different elements at the group level using individual stable isotope values 
+#
+# INPUT: -'dataset' a dataframe or matrix with at least 3 columns: 
+#		$ 'group': a numeric or character variable with the identity (e.g. life stage, sex, population, species) of each individual
+#		$ 'd13C', 'd15N', 'dD' and/or 'd34S': at least two numeric variables with stable isotope value f each individual
+#		$ 'weight': an optional numeric variable with weight (e.g. body mass, dry mass) of each individual
+#
+# OUTPUT: a matrix with for each group of individuals (rows): number of individuals ('n'), mean stable isotope value (e.g. 'd13C', 'd15N'), 
+#           standard deviation of stable isotope values (e.g. 'd13C_sd', 'd15N_sd'), and total weight of each group ('weight') [NA if no weight as input]. 
+#
+# NB: This matrix can be used directly as an INPUT for the subsequent functions: 'scaleSI_rge01', 'IDiversity' and 'IOverlap'
+##################################################################################################################################################################
+
+
+meanSI_group<-function(dataset) {
 
 # names of groups and abbreviation (4 characters)
-gr <- levels(as.factor(as.character(dataset[, "group"])))
+gr<-levels(as.factor(as.character(dataset[,"group"])))
 
 # number of groups
-nbgr <- length(gr)
+nbgr<-length(gr)
 
 # computing number of individuals per group
-nbind_gr <- summary(as.factor(as.character(dataset[, "group"])))
+nbind_gr<-summary(as.factor(as.character(dataset[,"group"])))
 
 # number and names of elements used
-nmel <- colnames(dataset)[which(colnames(dataset) %in% nm_si)]
-nbel <- length(nmel)
+nmel<-colnames(dataset)[which(colnames(dataset) %in% nm_si)]
+nbel<-length(nmel)
 
 # isotopic signature of individuals
-si <- as.matrix(dataset[,nmel])
+si<-as.matrix(dataset[,nmel])
 
 # computing mean isotopic signature and total abundance of each group (if abundances provided)
-data_gr <- matrix(NA,nbgr,2+nbel*2, dimnames=list(gr, c("n", nmel, paste("sd",nmel,sep="_"), "weight"  ) ) )
+data_gr<-matrix(NA,nbgr,2+nbel*2, dimnames=list(gr, c("n", nmel, paste("sd",nmel,sep="_"), "weight"  ) ) )
   
 for (k in gr)
 { 
-  rowk <- which(dataset[, "group"]==k)
-  data_gr[k, "n"]<-length(rowk) 
+  rowk<-which(dataset[,"group"]==k)
+  data_gr[k,"n"]<-length(rowk) 
   
-  if("weight" %in% colnames(dataset)==T) { data_gr[k, "weight"]<-sum(dataset[rowk, "weight"])} # end of weight
+  if( "weight" %in% colnames(dataset)==T) { data_gr[k,"weight"]<-sum(dataset[rowk,"weight"])  } # end of weight
        
          for (e in nmel)
          {data_gr[k,e]<-mean(si[rowk,e])
@@ -64,42 +79,41 @@ return(data_gr)
 	
 } # end of function meanSI_group
 
+##################################################################################################################################################################
+##################################################################################################################################################################
+#
+# scaleSI_range01: function to standardize Stable Isotope values of a dataset given a reference dataset of organisms (individuals or group of individuals)
+#
+# INPUTS:- 'raw_data': a dataframe or matrix with stable isotope values for at least 2 elements (columns) for several groups (rows). 
+#						Columns' names should be a subset of ('d13C','d15N','dD','d34S').
+#		 - 'all_data': a dataframe or matrix with stable isotope values for the same elements than 'raw_data' (columns) with an equal or larger set of samples (rows). 
+#				By default, 'all_data' is identical to 'raw_data'.
+# 
+# OUTPUT: a matrix similar to 'raw_data' with scaled stable isotope values (each ranging from 0 to 1). 
+#         If standard deviation values are provided, they are scaled based on the range of mean values.
+#
+##################################################################################################################################################################
 
-#' scaleSI_range01
-#' function to standardize Stable Isotope values of a dataset given a reference dataset of organisms (individuals or group of individuals)
-#'
-#' @param raw_data, a dataframe or matrix with stable isotope values for at least 2 elements (columns) for several groups (rows).
-#' Columns' names should be a subset of ('d13C','d15N','dD','d34S').
-#' @param all_data, a dataframe or matrix with stable isotope values for the same elements than 'raw_data' (columns) with an equal or larger set of samples (rows). 
-#' By default, 'all_data' is identical to 'raw_data'.
-#'
-#' @return, a matrix similar to 'raw_data' with scaled stable isotope values (each ranging from 0 to 1).
-#' If standard deviation values are provided, they are scaled based on the range of mean values.
-#' @export
-#'
-#' @examples
 
-scaleSI_range01 <- function(raw_data, all_data=raw_data) {
-
-nm_si <- c("d13C","d15N","dD","d34S")
+scaleSI_range01<-function(raw_data, all_data=raw_data) {
 
 # names of elements used to describe data
-nmel_raw_data <- colnames(raw_data)[which(colnames(raw_data) %in% nm_si)]
-si_raw_data <- as.matrix(raw_data[,nmel_raw_data])
-nmel <- nmel_raw_data ; nbel <- length(nmel_raw_data)
+nmel_raw_data<-colnames(raw_data)[which(colnames(raw_data) %in% nm_si)]
+si_raw_data<-as.matrix(raw_data[,nmel_raw_data])
+nmel<-nmel_raw_data ; nbel<-length(nmel_raw_data)
  
 # checking that elements used to describe raw data are present in whole dataset
-if (sum(nmel_raw_data %in% colnames(raw_data)) !=nbel) stop("error: the elements present in 'raw_data' must be present in 'all_data'")
+if ( sum(nmel_raw_data %in% colnames(raw_data)) !=nbel ) stop("error: the elements present in 'raw_data' must be present in 'all_data'")
 
 # matrix to store results
-data_scaled <- raw_data
+data_scaled<-raw_data
 
 # scaling data according to range of whole dataset
 for (e in nmel)
-data_scaled[,e] <- (raw_data[,e]-min(all_data[,e],na.rm=T))/(max(all_data[,e],na.rm=T)-min(all_data[,e], na.rm=T))	
+data_scaled[,e]<-(raw_data[,e]-min(all_data[,e],na.rm=T))/(max(all_data[,e],na.rm=T)-min(all_data[,e],na.rm=T))	
 
 # scaling standard deviation (if any)
-nmelsd <- paste("sd",nmel,sep="_")
+nmelsd<-paste("sd",nmel,sep="_")
 if(sum(nmelsd %in% colnames(raw_data) )==nbel) {
 	for (e in nmel)
 	data_scaled[,paste("sd",e,sep="_")]<-raw_data[,paste("sd",e,sep="_")]/(max(all_data[,e],na.rm=T)-min(all_data[,e],na.rm=T))	
@@ -109,36 +123,21 @@ return(data_scaled)
 	
 } # end of scale_range01
 
-
+##################################################################################################################################################################
+##################################################################################################################################################################
 
 # generic graphical functions used in 'IDiversity' and 'IOverlap'
 
 # axis titles for the 4 types of istopes used
-tit_d13C <- expression(bold(paste(delta^"13",C,sep=""))) ; scl_tit_d13C<-expression(bold(paste("Scaled ",delta^"13",C,sep="")))
-tit_d15N <- expression(bold(paste(delta^"15",N,sep=""))) ; scl_tit_d15N<-expression(bold(paste("Scaled ",delta^"15",N,sep="")))
-tit_dD <- expression(bold(paste(delta^"",D,sep=""))) ; scl_tit_dD<-expression(bold(paste("Scaled ",delta^"",D,sep="")))
-tit_d34S <- expression(bold(paste(delta^"34",S,sep=""))) ; scl_tit_d34S<-expression(bold(paste("Scaled ",delta^"34",S,sep="")))
+tit_d13C<-expression(bold(paste(delta^"13",C,sep=""))) ; scl_tit_d13C<-expression(bold(paste("Scaled ",delta^"13",C,sep="")))
+tit_d15N<-expression(bold(paste(delta^"15",N,sep=""))) ; scl_tit_d15N<-expression(bold(paste("Scaled ",delta^"15",N,sep="")))
+tit_dD<-expression(bold(paste(delta^"",D,sep=""))) ; scl_tit_dD<-expression(bold(paste("Scaled ",delta^"",D,sep="")))
+tit_d34S<-expression(bold(paste(delta^"34",S,sep=""))) ; scl_tit_d34S<-expression(bold(paste("Scaled ",delta^"34",S,sep="")))
 
 
-#' isotopic_space
-#' graphic function to plot isotopic space
-#'
-#' @param nmX 
-#' @param nmY 
-#' @param limX 
-#' @param limY 
-#' @param labX 
-#' @param labY 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
-isotopic_space <- function(nmX="X",nmY="Y", limX=c(-0.05,1.05),limY=c(-0.05,1.05), labX=c(0,0.25,0.5,0.75,1),labY=c(0,0.25,0.5,0.75,1) )   {
+# graphic function to plot isotopic space
+isotopic_space<-function(nmX="X",nmY="Y", limX=c(-0.05,1.05),limY=c(-0.05,1.05), labX=c(0,0.25,0.5,0.75,1),labY=c(0,0.25,0.5,0.75,1) )   {
  
-nm_si<-c("d13C","d15N","dD","d34S")
-  
 # setting graphical parameters
 par(mar=c(4,4.5,4,3.5)) ; tick=-0.4 ; lasX=1 ;lasY=1 ; lineX=-0.2 ; lineY=-0.2 ; cexX=0.9 ; cexY=0.9 ; lineXt=lineX+2.1 ; lineYt=lineY+2.2 ; cexXt=1 ; cexYt=1 
 
@@ -158,22 +157,8 @@ mtext(side=2,nmY,cex=cexYt,line=lineYt,font=2) # Y title
 
 } # end of isotopic_space	
 
-
-
-#' meansexy
-#'function to add vertical and horizontal error bars
-#'
-#' @param meanxy 
-#' @param sexy 
-#' @param colb 
-#' @param lg 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
-meansexy <- function(meanxy,sexy,colb="black",lg=0.1) {
+# function to add vertical and horizontal error bars
+meansexy<-function(meanxy,sexy,colb="black",lg=0.1) {
 segments(meanxy[,1]-sexy[,1],meanxy[,2],meanxy[,1]+sexy[,1],meanxy[,2],col=colb) # x error bar
 segments(meanxy[,1],meanxy[,2]-sexy[,2],meanxy[,1],meanxy[,2]+sexy[,2],col=colb) # y error bar
 segments(meanxy[,1]-sexy[,1],meanxy[,2]-lg,meanxy[,1]-sexy[,1],meanxy[,2]+lg,col=colb)
@@ -182,409 +167,653 @@ segments(meanxy[,1]-lg,meanxy[,2]-sexy[,2],meanxy[,1]+lg,meanxy[,2]-sexy[,2],col
 segments(meanxy[,1]-lg,meanxy[,2]+sexy[,2],meanxy[,1]+lg,meanxy[,2]+sexy[,2],col=colb)
 } # end of meansexy
 
+##################################################################################################################################################################
+##################################################################################################################################################################
+#
+# 'IDiversity': function to compute complementary indices describing the isotopic diversity for a group of organisms (individuals in a population or species in a community)
+#
+# INPUTS: 
+#       - 'cons': a dataframe or matrix with stable isotope values for at least 2 elements (columns) for several organisms (rows). 
+# 				Columns' names should be a subset of  ('d13C','d15N','dD','d34S'). 
+#				  It may include standard deviation of mean values (coded as 'sd_d13C', 'sd_d15N',...). 
+#				  These standard deviation values are used only for illustrative purposes in the graphical outputs.
+#
+#		    - 'weight': a numeric vector with weight of organisms (e.g. individual mass, or relative abundance of species in the community). By default all weight equals 1.
+# 		  - 'nm_plot': a single character string specifying the name of the .jpeg file where graphics illustrating isotopic diversity will be stored. Default is NA, i.e. no graphics.
+# 		  - 'col': a single color, coded as hexadecimal characters, for points and convex hull filling. Default is green.
+# 		  - 'transp': a single numeric value indicating the percentage of transparency for convex hulls filling. Default is 50%.
+#       -  'scaled': a logical value indicating wether isotopic values have been scaled to have a range between 0 and 1. 
+#                   If TRUE (default) axes of graphics fill at least the 0-1 range and axes titles specify the scaling procedure
+#
+# OUTPUTS: - a vector with minimum, maximum, range and abundance-weighted mean values for each isotopic axis (e.g. 'min_d13C', 'max_d13C', 'range_d13C', 'IPos_d13C' for d13C) 
+#			and 5 multidimensional indices: isotopic richness ('IRic'), isotopic evenness ('IEve') and isotopic divergence ('IDiv'), isotopic dispersion ('IDis') and isotopic uniqueness ('IUni'). 
+#
+#          - for each pair of elements a 6-panels .jpeg file (e.g. ‘nm_plot’_d13C_d15N.jpeg).
+#            All axes have the same range to illustrate potential bias if no standardization has been done prior indices computation.
+#            For each panel, points representing organisms position in the isotopic niche space (and associated standard deviation if values have been provided in “cons” dataframe). 
+#            Weights of organisms are illustrated proportionally to point surface and a legend is displayed in the bottom right corner.
+#
+#          * top left panel: Isotopic position, i.e. weighted-mean values of the organisms on each axis, is illustrated with a square and horizontal and vertical dashed lines.
+# 			   * top middle panel: Isotopic richness is shown as the colored area. Filled points are organisms being vertices in the multidimensional space. 
+#					               If more than two elements were used to build the isotopic space, the convex polygon is a projection of the multidimensional convex hull in 2D.
+#                      			   Minimum and maximum values on each axis are illustrated by vertical bars.
+# 			   * top right panel: Isotopic divergence is illustrated through the center of gravity of the vertices (diamond) and al the distances to it (dashed lines).
+# 			   * bottom left panel: Isotopic dispersion is symbolized by the center of gravity of all points (white square) and all the distances to it (dotted lines).
+# 			   * bottom middle panel: Isotopic evenness is illustrated with the minimum spanning tree linking all points in the multidimensional space.
+# 			   * bottom right panel: Isotopic uniqueness is symbolized with all the distances to nearest organism (black arrows).
+#
+##################################################################################################################################################################
 
-#' IDiversity
-#' 
-#'function to compute complementary indices describing the isotopic diversity for a group of organisms (individuals in a population or species in a community)
-#'
-#' @param cons, a dataframe or matrix with stable isotope values for at least 2 elements (columns) for several organisms (rows).
-#'  It may include standard deviation of mean values (coded as 'sd_d13C', 'sd_d15N',...). 
-#'  These standard deviation values are used only for illustrative purposes in the graphical outputs.
-#' @param weight a numeric vector with weight of organisms (e.g. individual mass, or relative abundance of species in the community). By default all weight equals 1.
-#' @param nm_plot a single character string specifying the name of the .jpeg file where graphics illustrating isotopic diversity will be stored. Default is NA, i.e. no graphics.
-#' @param col a single color, coded as hexadecimal characters, for points and convex hull filling. Default is green.
-#' @param transp a single numeric value indicating the percentage of transparency for convex hulls filling. Default is 50%.
-#' @param scaled a logical value indicating wether isotopic values have been scaled to have a range between 0 and 1. 
-#' If TRUE (default) axes of graphics fill at least the 0-1 range and axes titles specify the scaling procedure
-#'
-#' @return a vector with minimum, maximum, range and abundance-weighted mean values for each isotopic axis (e.g. 'min_d13C', 'max_d13C', 'range_d13C', 'IPos_d13C' for d13C) 
-#' 	and 5 multidimensional indices: isotopic richness ('IRic'), isotopic evenness ('IEve') and isotopic divergence ('IDiv'), isotopic dispersion ('IDis') and isotopic uniqueness ('IUni'). 
-#'  - for each pair of elements a 6-panels .jpeg file (e.g. ‘nm_plot’_d13C_d15N.jpeg).
-#'         All axes have the same range to illustrate potential bias if no standardization has been done prior indices computation.
-#'         For each panel, points representing organisms position in the isotopic niche space (and associated standard deviation if values have been provided in “cons” dataframe).
-#'         Weights of organisms are illustrated proportionally to point surface and a legend is displayed in the bottom right corner.
-#'         
-#'         * top left panel: Isotopic position, i.e. weighted-mean values of the organisms on each axis, is illustrated with a square and horizontal and vertical dashed lines.
-#'         * top middle panel: Isotopic richness is shown as the colored area. Filled points are organisms being vertices in the multidimensional space. 
-#'            If more than two elements were used to build the isotopic space, the convex polygon is a projection of the multidimensional convex hull in 2D.
-#'            Minimum and maximum values on each axis are illustrated by vertical bars.
-#'         * top right panel: Isotopic divergence is illustrated through the center of gravity of the vertices (diamond) and al the distances to it (dashed lines).
-#'         * bottom left panel: Isotopic dispersion is symbolized by the center of gravity of all points (white square) and all the distances to it (dotted lines).
-#'         * bottom middle panel: Isotopic evenness is illustrated with the minimum spanning tree linking all points in the multidimensional space.
-#'         * bottom right panel: Isotopic uniqueness is symbolized with all the distances to nearest organism (black arrows).	
-#' @export
-#'
-#' @examples IDiversity(cons=data_fish_scl, weight=data_fish_scl[,c("rel_Biomass")], nm_plot= "data1")
 
-IDiversity<-function(cons, weight=rep(1,nrow(cons)), nm_plot=NA, col="#051D8A", transp=40, scaled=TRUE) {
-  nm_si<-c("d13C","d15N","dD","d34S")
+IDiversity<-function(cons, weight=rep(1,nrow(cons)), nm_plot=NA, col="#0c3d97", transp=50, scaled=TRUE) {
+
+# names of elements used to describe consumers
+nmel<-colnames(cons)[which(colnames(cons) %in% nm_si)]
+nbel<-length(nmel)
+
+# stable isotope signature
+si<-as.matrix(cons[,nmel])
+
+# checking weighting for all individuals
+if(length(weight) != nrow(cons)) stop(paste(" error: weight does not have the same length than number of consumers"))
+
+# relative weight
+rel_weight<-weight/sum(weight)
+
+# checking number of consumers is higher than number of elements
+if (nrow(cons)<(nbel+1)) stop(paste(" error: computing indices using",nbel,"elements requires at least",nbel+1," consumers"))
+
+
+# vector to store results
+ID<-rep(NA,nbel*4+5) ; names(ID)<-c(paste("min",nmel,sep="_"), paste("max",nmel,sep="_"), paste("range",nmel,sep="_"), paste("IPos",nmel,sep="_"), c("IRic","IDiv","IDis","IEve","IUni") )
+
+###########################################################
+# computing indices values on each axis
+
+# range of traits values
+ID[paste("min",nmel,sep="_")]<-apply(si,2,min)
+ID[paste("max",nmel,sep="_")]<-apply(si,2,max)
+ID[paste("range",nmel,sep="_")]<-ID[paste("max",nmel,sep="_")]-ID[paste("min",nmel,sep="_")]
+
+# abundance-weighted mean values
+ID[paste("IPos",nmel,sep="_")]<-rel_weight%*%si
+
+###############################################################################################################################
+
+# generic functions for computing multidimensional diversity indices
+
+I_RED<-function(coord,relab )  {
+
+# number of species
+S<-nrow(coord) 
+
+###########################################################
+# Richness
+IRic<-round(convhulln(coord,"FA")$vol,6)
+
+# identity of vertices
+vert0<-convhulln(coord,"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T)
+vertices<-(vert1+1)[-1]
+
+###########################################################
+# Evenness
+
+# inter-species Euclidean distance
+distT<-dist(coord, method="euclidian")
+
+# topology of Minimum Spanning Tree and conversion of the 'mst' matrix into 'dist' class
+linkmst<-mst(distT)
+mstvect<-as.dist(linkmst)
+
+# pairwise cumulative relative abundances and conversion into 'dist' class
+ab2<-matrix(0,nrow=S,ncol=S)
+for (q in 1:S)
+for (r in 1:S)
+ab2[q,r]<-relab[q]+relab[r] # end of q,r
+ab2vect<-as.dist(ab2)
+
+# EW index for the (S-1) segments
+EW<-rep(0,S-1)
+flag<-1
+for (m in 1:((S-1)*S/2))
+{if (mstvect[m]!=0) {EW[flag]<-distT[m]/(ab2vect[m]) ; flag<-flag+1}}  # end of m
+
+# PEW index and comparison with 1/S-1
+minPEW<-rep(0,S-1)  ;  OdSmO<-1/(S-1)
+for (l in 1:(S-1))
+minPEW[l]<-min( (EW[l]/sum(EW)) , OdSmO )  # end of l
+
+# IEve
+IEve<-round( ( (sum(minPEW))- OdSmO) / (1-OdSmO ) ,6)
+
+###############################################################
+# Divergence
+
+# coordinates of vertices
+coordvertices<-coord[vertices,]
+
+# coordinates of the center of gravity of the vertices (B)
+B<-apply(coordvertices,2,mean)
+
+# Euclidean dstance to B (dB)
+dB<-apply(coord, 1, function(x) { (sum((x-B)^2) )^0.5} )
+
+# mean of dB values and deviations to mean 
+meandB<-mean(dB)
+devdB<-dB-meandB
+
+# abundance-weighted mean deviation
+abdev<-relab*devdB
+ababsdev<-relab*abs(devdB)
   
-  # names of elements used to describe consumers
-  nmel<-colnames(cons)[which(colnames(cons) %in% nm_si)]
-  nbel<-length(nmel)
+# IDiv
+IDiv<-round( (sum(abdev)+meandB) / (sum(ababsdev)+meandB) ,6)
+
+####################################################################
+# results
+indices<-c(IRic,IEve,IDiv) ; names(indices)<-c("IRic","IEve","IDiv")
+detailsRED<-list(vertices=vertices, mst=linkmst, B=B, meandB=meandB)
+I_RED<-list(indices=indices, details=detailsRED )
+invisible(I_RED)
+} # end of function I_RED
+########################################################################################################################################
+
+# multivariate indices from Villeger et al 2008
+ired<-I_RED(si,rel_weight)
+ID[c("IRic","IEve","IDiv")]<-ired$indices
+
+# Isotopic dispersion: scaled abundance-weighted mean distance to abundance-weighted centroid 
+dist_centr<-apply(si, 1, function(x) { (sum((x-ID[paste("IPos",nmel,sep="_")])^2) )^0.5} ) # distance to abundance-weighted centroid 
+ID["IDis"]<-(rel_weight %*% dist_centr)/ max(dist_centr) # scaling between 0(=all biomass on the centroid) and 1(=all biomass on the most extreme point)
+
+# Isotopic originality : scaled abundance weighted mean distance to nearest neighbour
+# for each organism distance to, and identity of, nearest neighbour
+dist_T<-as.matrix(dist(si,method="euclidean")) ; dist_T[which(dist_T==0)]<-NA
+oriT<-apply(dist_T, 1, min, na.rm=T )
+NN<-dist_T ; NN<-NN-apply(NN,1,min,na.rm=T) ; NN[which(NN!=0)]<-NA   ; NN[which(NN==0)]<-1
+ID["IUni"]<-(oriT %*% rel_weight) / max(oriT)   # abundance weighting and scaling by maximal distance between 2 points
+ 
+########################################################################################################################################
+########################################################################################################################################
+# graphical output
+if( is.na(nm_plot)==FALSE) {
+	
+# setting axes limits given consumers signature for all elements
+nmelsd<-paste("sd",nmel,sep="_")
+
+min_axes<- apply(cons[,nmel], 2, min, na.rm=T) ; max_axes<- apply(cons[,nmel], 2, max, na.rm=T) # limits of each axis
+
+# limits of each axis given sd
+if(sum(nmelsd %in% colnames(cons) )==nbel) 
+  {min_axes<-apply(cons[,nmel]-cons[,nmelsd], 2, min, na.rm=T)
+  max_axes<-apply(cons[,nmel]+cons[,nmelsd], 2, max, na.rm=T) }
+
+# same range on each axis for graphics: min=observed minimal value - 5%  maximal range ; max=observed minimal value + maximal range + 5% maximal range
+rge_axes<-max_axes-min_axes # range on each axis
+
+newlim_axes<-matrix(0,length(nmel),2, dimnames=list(nmel,c("min","max") ) )
+newlim_axes[,"min"]<-min_axes-max(rge_axes)*0.05
+newlim_axes[,"max"]<-min_axes+max(rge_axes)*1.05
+
+rge_plot<-max(rge_axes)*1.1
+
+
+# one jpeg file per pair of elements with 6 panels
+
+for (e1 in 1:(nbel-1))
+for (e2 in (e1+1):nbel) 
+{
+# names of elements
+nmel1<-nmel[e1] ; eval(parse(text=paste("tit1<-tit_",nmel1,sep="") ) )
+nmel2<-nmel[e2] ; eval(parse(text=paste("tit2<-tit_",nmel2,sep="") ) )
+nmel12<-c(nmel1,nmel2)
+
+# creating jpeg file
+nmjpeg<-paste(nm_plot,"_",nmel1,"_",nmel2,".jpeg",sep="")
+jpeg(file=nmjpeg, res=400, width=3500, height=4500)
+layout(matrix(c(1:6),3,2,T)) ; layout.show(6)
+
+# limits of axes
+lim_1<-newlim_axes[nmel1,]
+lim_2<-newlim_axes[nmel2,]
   
-  # stable isotope signature
-  si<-as.matrix(cons[,nmel])
+ # if axes are for scaled isotope values, "Scaled" in axis title and range is at least from 0 to 1
+if (scaled==TRUE) {
+    tit1<-eval(parse(text=paste("tit1<-scl_tit_",nmel1,sep="") ) ); tit2<-eval(parse(text=paste("tit2<-scl_tit_",nmel2,sep="") ) )
+    lim_1<-c( min(-0.05, lim_1[1]) , max(1.05,lim_1[2])   )
+    lim_2<-c( min(-0.05, lim_2[1]) , max(1.05,lim_2[2])   )
+  }  # end of if scaled axes
+
+# labels  on axes
+lab_1<-pretty(lim_1,n=5,min.n=4) ; lab_1<-lab_1[which(lab_1>=lim_1[1] & lab_1<=lim_1[2])]
+lab_2<-pretty(lim_2,n=5,min.n=4) ; lab_2<-lab_2[which(lab_2>=lim_2[1] & lab_2<=lim_2[2])]
+
+###############################################################
+# Isotopic Position
+
+# Isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# mean value
+segments(ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], ID[paste("IPos_",nmel1,sep="")], min(lim_2), lwd=1.5, col=col, lty=2)
+segments(ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], min(lim_1) ,ID[paste("IPos_",nmel2,sep="")], lwd=1.5, col=col, lty=2)
+points( ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], pch=22, bg="white", col=col,cex=2.5)
+
+# abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
+sizeab<-sqrt(rel_weight)*0.075*rge_plot  
+symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
+
+# legend for abundance 
+rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
+symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
+text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
+
+# error bars if any
+if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
+
+# index
+mtext(side=3, tit1, at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
+mtext(side=3, paste(": IPos=",round(ID[paste("IPos_",nmel1,sep="")],3),sep=""), at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0)     
+
+mtext(side=3, tit2, at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
+mtext(side=3, paste(": IPos=",round(ID[paste("IPos_",nmel2,sep="")],3),sep=""), at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0)     
+
+mtext(side=3, "Isotopic Position", at=mean(lim_1), line=1.1, cex=0.8,adj=0.5, font=2)                
+
+###############################################################
+# Isotopic Richness
+
+# Isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# range on each axis
+dec1<-rge_plot*0.02
+segments( ID[paste("min_",nmel1,sep="")], min(lim_2)-dec1, ID[paste("min_",nmel1,sep="")], min(lim_2)+dec1, col=col , lwd=3) # min x
+segments( ID[paste("max_",nmel1,sep="")], min(lim_2)-dec1, ID[paste("max_",nmel1,sep="")], min(lim_2)+dec1, col=col , lwd=3) # max x
+
+segments( min(lim_1)-dec1, ID[paste("min_",nmel2,sep="")], min(lim_1)+dec1, ID[paste("min_",nmel2,sep="")],  col=col , lwd=3) # min y
+segments( min(lim_1)-dec1, ID[paste("max_",nmel2,sep="")], min(lim_1)+dec1, ID[paste("max_",nmel2,sep="")],  col=col , lwd=3) # max y
+
+# projected convex hull in 2D
+vert0<-convhulln(si[,nmel12],"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T) ; vertices2D<-(vert1+1)[-1]
+polygon(si[vertices2D,nmel12],border=NA,col=paste(col,transp,sep=""))
+
+# all points (empty) then filling points being vertices in nD
+points(si[,nmel12], pch=21,bg=NA, col=col[1],cex=2)
+points(si[ired$details$vertices,nmel12], pch=21,bg=col, col=col,cex=2)
+ 
+# error bars if any
+if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
   
-  # checking weighting for all individuals
-  if(length(weight) != nrow(cons)) stop(paste(" error: weight does not have the same length than number of consumers"))
+# index    
+mtext(side=3, tit1, at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
+mtext(side=3, paste(": ",round(ID[paste("range_",nmel1,sep="")],1), " [",round(ID[paste("min_",nmel1,sep="")],1),";",round(ID[paste("max_",nmel1,sep="")],1),"]",sep=""), at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0) 
+
+mtext(side=3, tit2, at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
+mtext(side=3, paste(": ",round(ID[paste("range_",nmel2,sep="")],1), " [",round(ID[paste("min_",nmel2,sep="")],1),";",round(ID[paste("max_",nmel2,sep="")],1),"]",sep=""), at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0) 
+
+mtext(side=3, paste("Isotopic Richness=",round(ID['IRic'],3),sep=""), at=mean(lim_1), line=1.1, cex=0.8,adj=0.5, font=2)                
+
+###############################################################
+# Isotopic Divergence
+
+# Isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# projected convex hull in 2D
+vert0<-convhulln(si[,nmel12],"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T) ; vertices2D<-(vert1+1)[-1]
+polygon(si[vertices2D,nmel12],border=col,col=NA, lwd=1 )
+
+segments(ired$details$B[nmel1], ired$details$B[nmel2], si[,nmel1],si[,nmel2],col=col, lty=2, lwd=2)
+points(ired$details$B[nmel1], ired$details$B[nmel2], pch=23,col=col,bg="white",cex=2.5)
+    
+# abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
+sizeab<-sqrt(rel_weight)*0.075*rge_plot  
+symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
+
+# legend for abundance 
+rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
+symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
+text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
+
+# error bars if any
+if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
   
-  # relative weight
-  rel_weight<-weight/sum(weight)
+# index    
+mtext(side=3, paste("Isotopic Divergence=",round(ID['IDiv'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)               
+           
+###############################################################
+# Isotopic Dispersion
+
+# Isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# distance to abundance weighted centroid
+segments(ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], si[,nmel1],si[,nmel2],col=col, lty=3, lwd=2)
+points( ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], pch=22, bg="white", col=col,cex=2.5)
+
+# abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
+sizeab<-sqrt(rel_weight)*0.075*rge_plot  
+symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
+
+# legend for abundance 
+rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
+symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
+text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
+
+# error bars if any
+if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
   
-  # checking number of consumers is higher than number of elements
-  if (nrow(cons)<(nbel+1)) stop(paste(" error: computing indices using",nbel,"elements requires at least",nbel+1," consumers"))
+# index    
+mtext(side=3, paste("Isotopic Dispersion=",round(ID['IDis'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)               
+
+###############################################################
+# Isotopic Evenness
+
+# Isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# MST
+for (j in 1:nrow(ired$details$mst))
+for (i in 1:nrow(ired$details$mst))
+if (ired$details$mst[j,i]==1 & j>i) segments(si[,nmel1][j], si[,nmel2][j], si[,nmel1][i], si[,nmel2][i], col=col, lwd=1.5)
+    
+   
+# abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
+sizeab<-sqrt(rel_weight)*0.075*rge_plot  
+symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
+
+# legend for abundance 
+rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
+symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
+text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
+
+# error bars if any
+if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
   
+# index    
+mtext(side=3, paste("Isotopic Evenness=",round(ID['IEve'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)     
+
+###############################################################
+# Isotopic Uniqueness
+
+# isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
+sizeab<-sqrt(rel_weight)*0.075*rge_plot  
+symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
+
+# distance to nearest neighbour
+for (k in 1:nrow(NN))
+{
+	arrows( si[k,nmel1],si[k,nmel2], si[which(NN[k,]==1)[1],nmel1], si[which(NN[k,]==1)[1],nmel2], col="black", lwd=1.8, length=0.1, angle=20)
+ } # end of k
+
+# legend for abundance 
+rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
+symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
+text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
+
+# error bars if any
+if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
   
-  # vector to store results
-  ID<-rep(NA,nbel*4+5) ; names(ID)<-c(paste("min",nmel,sep="_"), paste("max",nmel,sep="_"), paste("range",nmel,sep="_"), paste("IPos",nmel,sep="_"), c("IRic","IDiv","IDis","IEve","IUni") )
-  
-  ###########################################################
-  # computing indices values on each axis
-  
-  # range of traits values
-  ID[paste("min",nmel,sep="_")]<-apply(si,2,min)
-  ID[paste("max",nmel,sep="_")]<-apply(si,2,max)
-  ID[paste("range",nmel,sep="_")]<-ID[paste("max",nmel,sep="_")]-ID[paste("min",nmel,sep="_")]
-  
-  # abundance-weighted mean values
-  ID[paste("IPos",nmel,sep="_")]<-rel_weight%*%si
-  
-  ###############################################################################################################################
-  
-  # generic functions for computing multidimensional diversity indices
-  
-  I_RED<-function(coord,relab )  {
-    
-    # number of species
-    S<-nrow(coord) 
-    
-    ###########################################################
-    # Richness
-    IRic<-round(convhulln(coord,"FA")$vol,6)
-    
-    # identity of vertices
-    vert0<-convhulln(coord,"Fx TO 'vert.txt'")
-    vert1<-scan("vert.txt",quiet=T)
-    vertices<-(vert1+1)[-1]
-    
-    ###########################################################
-    # Evenness
-    
-    # inter-species Euclidean distance
-    distT<-dist(coord, method="euclidian")
-    
-    # topology of Minimum Spanning Tree and conversion of the 'mst' matrix into 'dist' class
-    linkmst<-mst(distT)
-    mstvect<-as.dist(linkmst)
-    
-    # pairwise cumulative relative abundances and conversion into 'dist' class
-    ab2<-matrix(0,nrow=S,ncol=S)
-    for (q in 1:S)
-      for (r in 1:S)
-        ab2[q,r]<-relab[q]+relab[r] # end of q,r
-    ab2vect<-as.dist(ab2)
-    
-    # EW index for the (S-1) segments
-    EW<-rep(0,S-1)
-    flag<-1
-    for (m in 1:((S-1)*S/2))
-    {if (mstvect[m]!=0) {EW[flag]<-distT[m]/(ab2vect[m]) ; flag<-flag+1}}  # end of m
-    
-    # PEW index and comparison with 1/S-1
-    minPEW<-rep(0,S-1)  ;  OdSmO<-1/(S-1)
-    for (l in 1:(S-1))
-      minPEW[l]<-min( (EW[l]/sum(EW)) , OdSmO )  # end of l
-    
-    # IEve
-    IEve<-round( ( (sum(minPEW))- OdSmO) / (1-OdSmO ) ,6)
-    
-    ###############################################################
-    # Divergence
-    
-    # coordinates of vertices
-    coordvertices<-coord[vertices,]
-    
-    # coordinates of the center of gravity of the vertices (B)
-    B<-apply(coordvertices,2,mean)
-    
-    # Euclidean dstance to B (dB)
-    dB<-apply(coord, 1, function(x) { (sum((x-B)^2) )^0.5} )
-    
-    # mean of dB values and deviations to mean 
-    meandB<-mean(dB)
-    devdB<-dB-meandB
-    
-    # abundance-weighted mean deviation
-    abdev<-relab*devdB
-    ababsdev<-relab*abs(devdB)
-    
-    # IDiv
-    IDiv<-round( (sum(abdev)+meandB) / (sum(ababsdev)+meandB) ,6)
-    
-    ####################################################################
-    # results
-    indices<-c(IRic,IEve,IDiv) ; names(indices)<-c("IRic","IEve","IDiv")
-    detailsRED<-list(vertices=vertices, mst=linkmst, B=B, meandB=meandB)
-    I_RED<-list(indices=indices, details=detailsRED )
-    invisible(I_RED)
-  } # end of function I_RED
-  ########################################################################################################################################
-  
-  # multivariate indices from Villeger et al 2008
-  ired<-I_RED(si,rel_weight)
-  ID[c("IRic","IEve","IDiv")]<-ired$indices
-  
-  # Isotopic dispersion: scaled abundance-weighted mean distance to abundance-weighted centroid 
-  dist_centr<-apply(si, 1, function(x) { (sum((x-ID[paste("IPos",nmel,sep="_")])^2) )^0.5} ) # distance to abundance-weighted centroid 
-  ID["IDis"]<-(rel_weight %*% dist_centr)/ max(dist_centr) # scaling between 0(=all biomass on the centroid) and 1(=all biomass on the most extreme point)
-  
-  # Isotopic originality : scaled abundance weighted mean distance to nearest neighbour
-  # for each organism distance to, and identity of, nearest neighbour
-  dist_T<-as.matrix(dist(si,method="euclidean")) ; dist_T[which(dist_T==0)]<-NA
-  oriT<-apply(dist_T, 1, min, na.rm=T )
-  NN<-dist_T ; NN<-NN-apply(NN,1,min,na.rm=T) ; NN[which(NN!=0)]<-NA   ; NN[which(NN==0)]<-1
-  ID["IUni"]<-(oriT %*% rel_weight) / max(oriT)   # abundance weighting and scaling by maximal distance between 2 points
-  
-  ########################################################################################################################################
-  ########################################################################################################################################
-  # graphical output
-  if( is.na(nm_plot)==FALSE) {
-    
-    # setting axes limits given consumers signature for all elements
-    nmelsd<-paste("sd",nmel,sep="_")
-    
-    min_axes<- apply(cons[,nmel], 2, min, na.rm=T) ; max_axes<- apply(cons[,nmel], 2, max, na.rm=T) # limits of each axis
-    
-    # limits of each axis given sd
-    if(sum(nmelsd %in% colnames(cons) )==nbel) 
-    {min_axes<-apply(cons[,nmel]-cons[,nmelsd], 2, min, na.rm=T)
-    max_axes<-apply(cons[,nmel]+cons[,nmelsd], 2, max, na.rm=T) }
-    
-    # same range on each axis for graphics: min=observed minimal value - 5%  maximal range ; max=observed minimal value + maximal range + 5% maximal range
-    rge_axes<-max_axes-min_axes # range on each axis
-    
-    newlim_axes<-matrix(0,length(nmel),2, dimnames=list(nmel,c("min","max") ) )
-    newlim_axes[,"min"]<-min_axes-max(rge_axes)*0.05
-    newlim_axes[,"max"]<-min_axes+max(rge_axes)*1.05
-    
-    rge_plot<-max(rge_axes)*1.1
-    
-    
-    # one jpeg file per pair of elements with 6 panels
-    
-    for (e1 in 1:(nbel-1))
-      for (e2 in (e1+1):nbel) 
-      {
-        # names of elements
-        nmel1<-nmel[e1] ; eval(parse(text=paste("tit1<-tit_",nmel1,sep="") ) )
-        nmel2<-nmel[e2] ; eval(parse(text=paste("tit2<-tit_",nmel2,sep="") ) )
-        nmel12<-c(nmel1,nmel2)
-        
-        # creating jpeg file
-        nmjpeg<-paste(nm_plot,"_",nmel1,"_",nmel2,".jpeg",sep="")
-        jpeg(file=nmjpeg, res=150, width=1200, height=1800)
-        layout(matrix(c(1:6),3,2,T)) ; layout.show(6)
-        
-        # limits of axes
-        lim_1<-newlim_axes[nmel1,]
-        lim_2<-newlim_axes[nmel2,]
-        
-        # if axes are for scaled isotope values, "Scaled" in axis title and range is at least from 0 to 1
-        if (scaled==TRUE) {
-          tit1<-eval(parse(text=paste("tit1<-scl_tit_",nmel1,sep="") ) ); tit2<-eval(parse(text=paste("tit2<-scl_tit_",nmel2,sep="") ) )
-          lim_1<-c( min(-0.05, lim_1[1]) , max(1.05,lim_1[2])   )
-          lim_2<-c( min(-0.05, lim_2[1]) , max(1.05,lim_2[2])   )
-        }  # end of if scaled axes
-        
-        # labels  on axes
-        lab_1<-pretty(lim_1,n=5,min.n=4) ; lab_1<-lab_1[which(lab_1>=lim_1[1] & lab_1<=lim_1[2])]
-        lab_2<-pretty(lim_2,n=5,min.n=4) ; lab_2<-lab_2[which(lab_2>=lim_2[1] & lab_2<=lim_2[2])]
-        
-        ###############################################################
-        # Isotopic Position
-        
-        # Isotopic space given axes limits set using consumers signature
-        isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
-        
-        # mean value
-        segments(ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], ID[paste("IPos_",nmel1,sep="")], min(lim_2), lwd=1.5, col=col, lty=2)
-        segments(ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], min(lim_1) ,ID[paste("IPos_",nmel2,sep="")], lwd=1.5, col=col, lty=2)
-        points( ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], pch=22, bg="white", col=col,cex=2.5)
-        
-        # abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
-        sizeab<-sqrt(rel_weight)*0.075*rge_plot  
-        symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
-        
-        # legend for abundance 
-        rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
-        symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
-        text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
-        
-        # error bars if any
-        if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
-        
-        # index
-        mtext(side=3, tit1, at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
-        mtext(side=3, paste(": IPos=",round(ID[paste("IPos_",nmel1,sep="")],3),sep=""), at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0)     
-        
-        mtext(side=3, tit2, at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
-        mtext(side=3, paste(": IPos=",round(ID[paste("IPos_",nmel2,sep="")],3),sep=""), at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0)     
-        
-        mtext(side=3, "Isotopic Position", at=mean(lim_1), line=1.1, cex=0.8,adj=0.5, font=2)                
-        
-        ###############################################################
-        # Isotopic Richness
-        
-        # Isotopic space given axes limits set using consumers signature
-        isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
-        
-        # range on each axis
-        dec1<-rge_plot*0.02
-        segments( ID[paste("min_",nmel1,sep="")], min(lim_2)-dec1, ID[paste("min_",nmel1,sep="")], min(lim_2)+dec1, col=col , lwd=3) # min x
-        segments( ID[paste("max_",nmel1,sep="")], min(lim_2)-dec1, ID[paste("max_",nmel1,sep="")], min(lim_2)+dec1, col=col , lwd=3) # max x
-        
-        segments( min(lim_1)-dec1, ID[paste("min_",nmel2,sep="")], min(lim_1)+dec1, ID[paste("min_",nmel2,sep="")],  col=col , lwd=3) # min y
-        segments( min(lim_1)-dec1, ID[paste("max_",nmel2,sep="")], min(lim_1)+dec1, ID[paste("max_",nmel2,sep="")],  col=col , lwd=3) # max y
-        
-        # projected convex hull in 2D
-        vert0<-convhulln(si[,nmel12],"Fx TO 'vert.txt'")
-        vert1<-scan("vert.txt",quiet=T) ; vertices2D<-(vert1+1)[-1]
-        polygon(si[vertices2D,nmel12],border=NA,col=paste(col,transp,sep=""))
-        
-        # all points (empty) then filling points being vertices in nD
-        points(si[,nmel12], pch=21,bg=NA, col=col[1],cex=2)
-        points(si[ired$details$vertices,nmel12], pch=21,bg=col, col=col,cex=2)
-        
-        # error bars if any
-        if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
-        
-        # index    
-        mtext(side=3, tit1, at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
-        mtext(side=3, paste(": ",round(ID[paste("range_",nmel1,sep="")],1), " [",round(ID[paste("min_",nmel1,sep="")],1),";",round(ID[paste("max_",nmel1,sep="")],1),"]",sep=""), at=min(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0) 
-        
-        mtext(side=3, tit2, at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=1)
-        mtext(side=3, paste(": ",round(ID[paste("range_",nmel2,sep="")],1), " [",round(ID[paste("min_",nmel2,sep="")],1),";",round(ID[paste("max_",nmel2,sep="")],1),"]",sep=""), at=mean(lim_1)+rge_plot*0.1, line=-0.4, cex=0.7,adj=0) 
-        
-        mtext(side=3, paste("Isotopic Richness=",round(ID['IRic'],3),sep=""), at=mean(lim_1), line=1.1, cex=0.8,adj=0.5, font=2)                
-        
-        ###############################################################
-        # Isotopic Divergence
-        
-        # Isotopic space given axes limits set using consumers signature
-        isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
-        
-        # projected convex hull in 2D
-        vert0<-convhulln(si[,nmel12],"Fx TO 'vert.txt'")
-        vert1<-scan("vert.txt",quiet=T) ; vertices2D<-(vert1+1)[-1]
-        polygon(si[vertices2D,nmel12],border=col,col=NA, lwd=1 )
-        
-        segments(ired$details$B[nmel1], ired$details$B[nmel2], si[,nmel1],si[,nmel2],col=col, lty=2, lwd=2)
-        points(ired$details$B[nmel1], ired$details$B[nmel2], pch=23,col=col,bg="white",cex=2.5)
-        
-        # abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
-        sizeab<-sqrt(rel_weight)*0.075*rge_plot  
-        symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
-        
-        # legend for abundance 
-        rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
-        symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
-        text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
-        
-        # error bars if any
-        if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
-        
-        # index    
-        mtext(side=3, paste("Isotopic Divergence=",round(ID['IDiv'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)               
-        
-        ###############################################################
-        # Isotopic Dispersion
-        
-        # Isotopic space given axes limits set using consumers signature
-        isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
-        
-        # distance to abundance weighted centroid
-        segments(ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], si[,nmel1],si[,nmel2],col=col, lty=3, lwd=2)
-        points( ID[paste("IPos_",nmel1,sep="")],ID[paste("IPos_",nmel2,sep="")], pch=22, bg="white", col=col,cex=2.5)
-        
-        # abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
-        sizeab<-sqrt(rel_weight)*0.075*rge_plot  
-        symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
-        
-        # legend for abundance 
-        rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
-        symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
-        text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
-        
-        # error bars if any
-        if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
-        
-        # index    
-        mtext(side=3, paste("Isotopic Dispersion=",round(ID['IDis'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)               
-        
-        ###############################################################
-        # Isotopic Evenness
-        
-        # Isotopic space given axes limits set using consumers signature
-        isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
-        
-        # MST
-        for (j in 1:nrow(ired$details$mst))
-          for (i in 1:nrow(ired$details$mst))
-            if (ired$details$mst[j,i]==1 & j>i) segments(si[,nmel1][j], si[,nmel2][j], si[,nmel1][i], si[,nmel2][i], col=col, lwd=1.5)
-        
-        
-        # abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
-        sizeab<-sqrt(rel_weight)*0.075*rge_plot  
-        symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
-        
-        # legend for abundance 
-        rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
-        symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
-        text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
-        
-        # error bars if any
-        if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
-        
-        # index    
-        mtext(side=3, paste("Isotopic Evenness=",round(ID['IEve'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)     
-        
-        ###############################################################
-        # Isotopic Uniqueness
-        
-        # isotopic space given axes limits set using consumers signature
-        isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
-        
-        # abundances, scaling: point area proportional to relative abundance, if relab=100%, circle diameter=15% of axis range
-        sizeab<-sqrt(rel_weight)*0.075*rge_plot  
-        symbols(si[,nmel1],si[,nmel2], circles=sizeab, inches=FALSE, bg=col, fg=col, add=TRUE)
-        
-        # distance to nearest neighbour
-        for (k in 1:nrow(NN))
-        {
-          arrows( si[k,nmel1],si[k,nmel2], si[which(NN[k,]==1)[1],nmel1], si[which(NN[k,]==1)[1],nmel2], col="black", lwd=1.8, length=0.1, angle=20)
-        } # end of k
-        
-        # legend for abundance 
-        rect(max(lim_1)-0.25*rge_plot, min(lim_2), max(lim_1), min(lim_2)+0.12*rge_plot)
-        symbols(max(lim_1)-0.19*rge_plot, min(lim_2)+0.06*rge_plot, circles=sqrt(0.1)*0.075*rge_plot, inches=FALSE, bg="black", fg="black", add=TRUE, lwd=1.5)
-        text(max(lim_1)-0.15*rge_plot, min(lim_2)+0.06*rge_plot,"10%", adj=c(0,0.5) ) 
-        
-        # error bars if any
-        if(sum(nmelsd %in% colnames(cons) )==nbel) { meansexy(meanxy=si[,nmel12], sexy=cons[,paste("sd",nmel12,sep="_")],colb=col,lg=0.01*rge_plot ) }# sd
-        
-        # index    
-        mtext(side=3, paste("Isotopic Uniqueness=",round(ID['IUni'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)               
-        
-        ###############################################
-        graphics.off()	
-      } # end of e1, e2  
-    
-    
-  } # end of plot
-  
-  ##############################################################################################
-  # returning results	
-  return(ID)	
-  
+# index    
+mtext(side=3, paste("Isotopic Uniqueness=",round(ID['IUni'],3),sep=""), at=mean(lim_1), line=0.5, cex=0.8,adj=0.5, font=2)               
+
+###############################################
+graphics.off()	
+} # end of e1, e2  
+
+
+} # end of plot
+
+##############################################################################################
+# returning results	
+return(ID)	
+
 } # end of function IDiversity
+
+##################################################################################################################################################################
+##################################################################################################################################################################
+# 'IOverlap': function to compute isotopic overlap indices between two sets of organisms (e.g. life stages within a population, species within a community)
+#
+# INPUTS: - 'cons1' and 'cons2': two dataframes or matrices with stable isotope values for two sets of organisms (same format as for 'IDiversity'). 
+#					Elements names should be identical between the two sets and be a subset of  ('d13C','d15N','dD','d34S').
+# 		- 'nm_plot': a single character string specifying the name of the jpeg file where graphics illustrating isotopic diversity will be stored. Default is NA, i.e. no graphics.
+# 		- 'col': a vector with 2 colors, coded as hexadecimal characters, for points and convex hull filling of the two sets of organisms. Default is 'cons1' in red and 'cons2' in blue.
+# 		- 'transp': a single numeric value indicating the percentage of transparency for convex hulls filling. Default is 50%.
+#     -  'scaled': a logical value indicating wether isotopic values have been scaled to have a range between 0 and 1. 
+#                   If TRUE (default) axes of graphics fill at least the 0-1 range and axes titles specify the scaling procedure
+#
+# OUTPUTS: - a matrix with 5 indices (rows) for each element and for their combination (columns). 
+# 					Indices are Isotopic Richness (TRic1, IRic2) of the two sets respectively, the volume of their intersection (IRic1n2), 
+#              Isotopic similarity (ISim), i.e. percentage of Isotopic Overlap expressed relatively to total Isotopic Richness [IRic1n2/(IRic1+IRic2-IRic1n2)], 
+#              and Isotopic nestedness (INes), i.e. percentage of Isotopic Overlap expressed relatively to to minimum Isotopic Richness [IRic1n2/(min(IRic1,IRic2))]
+#
+#          - a jpeg file (‘nm_plot’.jpeg) with one panel for each pair of elements  . 
+#               All axes have the same range to illustrate potential bias if no standardization are done.
+#               Points represent organism's position in the isotopic niche space (and associated standard deviation if values were provided in the corresponding 'cons' dataframe).
+#               Isotopic Overlap on each axis is illustrated by colored segment and as the intersection of colored polygons in the multidimensional space.
+#				If more than two elements were used to build the isotopic space, the convex polygons are projection of the multidimensional convex hulls in 2D.
+#
+##################################################################################################################################################################
+
+
+IOverlap<-function(cons1,cons2,nm_plot=NA, col=c("#504AE8","#FA1900"), transp=50, scaled=TRUE) {
+
+# names of elements used to describe consumers of set1
+nmel_cons1<-colnames(cons1)[which(colnames(cons1) %in% nm_si)]
+si_cons1<-as.matrix(cons1[,nmel_cons1])
+
+# names of elements used to describe consumers of set2
+nmel_cons2<-colnames(cons1)[which(colnames(cons2) %in% nm_si)]
+si_cons2<-as.matrix(cons2[,nmel_cons2])
+
+# checking that elements used to describe the 2 sets of consumers are identical
+if ( sum(nmel_cons1 !=nmel_cons2) !=0 ) stop(" error: the 2 set of consumers should be described using the same elements")
+nmel<-nmel_cons1 ; nbel<-length(nmel_cons1)
+ 
+# checking number of consumers is higher than number of elements
+if (nrow(cons1)<(nbel+1)) stop(paste(" error: computing indices using",nbel,"elements requires at least",nbel+1," consumers"))
+
+##########################################################################################
+# function to compute overlap between 2 sets of points in a multidimensional space
+
+intersect<-function(set1,set2)  {
+
+# tranforming points coordinates in the Euclidean space in true rational number written as character string
+# reduce set of points to vertices using redundant function
+# changing polytope representation: vertices to inequality constraints
+set1rep <- d2q(cbind(0, cbind(1, set1)))
+polytope1 <- redundant(set1rep, representation = "V")$output
+H_chset1 <- scdd(polytope1, representation = "V")$output
+
+set2rep <- d2q(cbind(0, cbind(1, set2)))
+polytope2 <- redundant(set2rep, representation = "V")$output
+H_chset2 <- scdd(polytope2, representation = "V")$output
+
+# intersection between the two polytopes
+H_inter <- rbind(H_chset1, H_chset2)
+V_inter <- scdd(H_inter, representation = "H")$output
+
+# extracting coordinates of vertices
+vert_1n2 <- q2d(V_inter[ , - c(1, 2)])
+
+# computing convex hull volume of the intersection (if it exists)
+vol_inter<-0
+if (is.matrix(vert_1n2)) # vector if one vertex in common
+    if( nrow(vert_1n2)>ncol(vert_1n2) ) vol_inter<-convhulln(vert_1n2,"FA")$vol
+
+return(vol_inter)
+
+} # end of function intersect
+##########################################################################################
+
+# vector to store results
+nD<-paste(nbel,"D",sep="")
+IO<-matrix(NA,5,nbel+1, dimnames=list( c("IRic1","IRic2","IRic1n2","ISim","INes"), c(nmel,nD) ) ) 
+                                          
+  
+# computing overlap on each axis  
+overlap1d<-function(x,y) { max(0, ( min(max(x),max(y)) - max(min(x),min(y)) )  ) }
+for (e in nmel)
+{ 
+IO["IRic1",e]<-max(si_cons1[,e])-min(si_cons1[,e])
+IO["IRic2",e]<-max(si_cons2[,e])-min(si_cons2[,e])	
+IO["IRic1n2",e]<-overlap1d( si_cons1[,e] , si_cons2[,e] ) 
+IO["ISim",e]<-IO["IRic1n2",e]/(IO["IRic1",e]+IO["IRic2",e]-IO["IRic1n2",e])	
+IO["INes",e]<-( IO["IRic1n2",e] ) /min(c(IO["IRic1",e],IO["IRic2",e]))	
+} # end of e
+
+
+# multidimensional IRic and vertices (if plot needed) for consumers of set1
+IO["IRic1",nD]<-round(convhulln(si_cons1,"FA")$vol,6)
+if( is.na(nm_plot)==FALSE) { 
+vert0<-convhulln(si_cons1,"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T)
+vertices_cons1<-(vert1+1)[-1] } # end of vertices for plot
+
+# multidimensional IRic and vertices (if plot needed) for consumers of set2
+IO["IRic2",nD]<-round(convhulln(si_cons2,"FA")$vol,6)
+if( is.na(nm_plot)==FALSE) { 
+vert0<-convhulln(si_cons2,"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T)
+vertices_cons2<-(vert1+1)[-1] } # end of vertices for plot
+
+# multidimensional intersection 
+IO["IRic1n2",nD]<-intersect(si_cons1, si_cons2 )
+
+# multidimensional similarity= intersection/total volume 
+IO["ISim",nD]<-IO["IRic1n2",nD]/(IO["IRic1",nD]+IO["IRic2",nD]-IO["IRic1n2",nD])
+
+# multidimensional nestedness= intersection/min(volume) 
+IO["INes",nD]<-IO["IRic1n2",nD]/min(c(IO["IRic1",nD],IO["IRic2",nD]))
+
+
+######################################################################################	
+# graphical output
+if( is.na(nm_plot)==FALSE) {
+	
+#####################################
+# creating jpeg file
+nmjpeg<-paste(nm_plot,".jpeg",sep="")
+# one panel per pairs of elements 
+if( nbel==2) { jpeg(file=nmjpeg, res=150, width=1800, height=600) ; layout(matrix(c(1,0,0),1,3,F)) ; layout.show(1) }
+if( nbel==3) { jpeg(file=nmjpeg, res=150, width=1800, height=600) ; layout(matrix(c(1:3),1,3,F)) ; layout.show(3) }
+if( nbel==4) { jpeg(file=nmjpeg, res=150, width=1800, height=1200) ; layout(matrix(c(1:6),2,3,F)) ; layout.show(6)  }
+
+
+  # setting axes limits given consumers signature for all elements
+  nmelsd<-paste("sd",nmel,sep="_")
+  cons<-rbind(cons1,cons2)
+  min_axes<- apply(cons[,nmel], 2, min, na.rm=T) ; max_axes<- apply(cons[,nmel], 2, max, na.rm=T) # limits of each axis
+  
+  # limits of each axis given sd
+  if(sum(nmelsd %in% colnames(cons) )==nbel) 
+  {min_axes<-apply(cons[,nmel]-cons[,nmelsd], 2, min, na.rm=T)
+    max_axes<-apply(cons[,nmel]+cons[,nmelsd], 2, max, na.rm=T) }
+  
+  # same range on each axis for graphics: min=observed minimal value - 5%  maximal range ; max=observed minimal value + maximal range + 5% maximal range
+  rge_axes<-max_axes-min_axes # range on each axis
+  
+  newlim_axes<-matrix(0,length(nmel),2, dimnames=list(nmel,c("min","max") ) )
+  newlim_axes[,"min"]<-min_axes-max(rge_axes)*0.1
+  newlim_axes[,"max"]<-min_axes+max(rge_axes)*1.1
+  
+  rge_plot<-max(rge_axes)*1.2
+  
+###############################################################
+# plot for each pair of elements
+
+
+for (e1 in 1:(nbel-1))
+for (e2 in (e1+1):nbel) 
+{
+
+# names of elements
+nmel1<-nmel[e1] ; eval(parse(text=paste("tit1<-tit_",nmel1,sep="") ) )
+nmel2<-nmel[e2] ; eval(parse(text=paste("tit2<-tit_",nmel2,sep="") ) )
+nmel12<-c(nmel1,nmel2)
+
+
+# limits of axes
+lim_1<-newlim_axes[nmel1,]
+lim_2<-newlim_axes[nmel2,]
+
+# if axes are for scaled isotope values, "Scaled" in axis title and range is at least from 0 to 1
+  if (scaled==TRUE) {
+    tit1<-eval(parse(text=paste("tit1<-scl_tit_",nmel1,sep="") ) ); tit2<-eval(parse(text=paste("tit2<-scl_tit_",nmel2,sep="") ) )
+    lim_1<-c( min(-0.05, lim_1[1]) , max(1.05,lim_1[2])   )
+    lim_2<-c( min(-0.05, lim_2[1]) , max(1.05,lim_2[2])   )
+  }  # end of if scaled axes
+  
+# labels on axes
+lab_1<-pretty(lim_1,n=6,min.n=6) ; lab_1<-lab_1[which(lab_1>=lim_1[1] & lab_1<=lim_1[2])]
+lab_2<-pretty(lim_2,n=6,min.n=6) ; lab_2<-lab_2[which(lab_2>=lim_2[1] & lab_2<=lim_2[2])]
+
+# isotopic space given axes limits set using consumers signature
+isotopic_space(nmX=tit1,nmY=tit2, limX=lim_1, limY=lim_2, labX=lab_1,labY=lab_2 )
+
+# consumers of set1
+# range on each axis
+dec1<-rge_plot*0.015
+segments( min(si_cons1[,nmel1]), min(lim_2)+dec1, max(si_cons1[,nmel1]), min(lim_2)+dec1, col=col[1] , lwd=3) # x
+segments( min(lim_1)+dec1, min(si_cons1[,nmel2]), min(lim_1)+dec1, max(si_cons1[,nmel2]), col=col[1] , lwd=3) # y
+
+# projected convex hull in 2D
+vert0<-convhulln(si_cons1[,nmel12],"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T) ; vertices2D<-(vert1+1)[-1]
+polygon(si_cons1[vertices2D,nmel12],border=NA,col=paste(col[1],transp,sep="") )
+
+# all points (empty) then filling points being vertices in nD
+points(si_cons1[,nmel12], pch=21,bg=NA, col=col[1],cex=2)
+points(si_cons1[vertices_cons1,nmel12], pch=21,bg=col[1], col=col[1],cex=2)
+                        
+# error bars if any
+if(sum(nmelsd %in% colnames(cons1) )==nbel) meansexy(si_cons1[,nmel12], cons1[,paste("sd",nmel12,sep="_")],colb=col[1],lg=0.01*rge_plot ) 
+
+
+# consumers of set2
+# range on each axis
+dec2<-rge_plot*0.03
+segments( min(si_cons2[,nmel1]), min(lim_2)+dec2, max(si_cons2[,nmel1]), min(lim_2)+dec2, col=col[2] , lwd=3) # x
+segments( min(lim_1)+dec2, min(si_cons2[,nmel2]), min(lim_1)+dec2, max(si_cons2[,nmel2]), col=col[2] , lwd=3) # y
+
+# projected convex hull in 2D
+vert0<-convhulln(si_cons2[,nmel12],"Fx TO 'vert.txt'")
+vert1<-scan("vert.txt",quiet=T) ; vertices2D<-(vert1+1)[-1]
+polygon(si_cons2[vertices2D,nmel12],border=NA,col=paste(col[2],transp,sep=""))
+
+# all points (empty) then filling points being vertices in nD
+points(si_cons2[,nmel12], pch=21,bg=NA, col=col[2],cex=2)
+points(si_cons2[vertices_cons2,nmel12], pch=21,bg=col[2], col=col[2],cex=2)
+                        
+# error bars if any
+if(sum(nmelsd %in% colnames(cons2) )==nbel) meansexy(si_cons2[,nmel12], cons2[,paste("sd",nmel12,sep="_")],colb=col[2],lg=0.01*rge_plot ) 
+
+            
+# indices values    
+mtext(side=3, paste("Isotopic Similarity=",round(IO['ISim',nD],3),sep=""), at=mean(lim_1), line=0.9, cex=0.8,adj=0.5, font=2)     
+mtext(side=3, paste("Isotopic Nestedness=",round(IO['INes',nD],3),sep=""), at=mean(lim_1), line=-0.3, cex=0.8,adj=0.5,font=2) 
+} # end of e1, e2             
+
+	
+graphics.off()	
+} # end of plot
+
+###############################################
+# returning results	
+return(IO)	
+	
+} # end of IOverlap
+
+
+
+
+##############################################################################################################################################
+################################                             END OF SRIPT                         ############################################
+##############################################################################################################################################

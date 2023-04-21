@@ -1,17 +1,75 @@
 ---
 title: "index"
 format: html
-editor: visual
+editor: source
 theme: minty
 toc: true
 toc-title: Sections
 toc-location: left
 ---
 
+# 1. SIBER (Jackson et al., 2011)
 
-## 1. SIBER (Jackson et al., 2011)
+## Ellipses
 
-### Group metrics
+### Station Z0508 - 25m
+
+```{r}
+#| echo: false
+par(mfrow =c(3,3))
+targets::tar_load(ellipse_Z0508)
+ellipse_Z0508
+```
+
+### Station Z0492 - 370m
+
+```{r}
+#| echo: false
+targets::tar_load(ellipse_Z0492)
+ellipse_Z0492
+```
+
+### Station Z0512 - 555m
+
+```{r}
+#| echo: false
+targets::tar_load(ellipse_Z0512)
+ellipse_Z0512
+```
+
+### Station Z0503 - 715m
+
+```{r}
+#| echo: false
+targets::tar_load(ellipse_Z0503)
+ellipse_Z0503
+```
+
+### Station Z0518 - 1000m
+
+```{r}
+#| echo: false
+targets::tar_load(ellipse_Z0518)
+ellipse_Z0518
+```
+
+### Station Z0524 - 1010m
+
+```{r}
+#| echo: false
+targets::tar_load(ellipse_Z0524)
+ellipse_Z0524
+```
+
+### Station Z0497 - 1335m
+
+```{r}
+#| echo: false
+targets::tar_load(ellipse_Z0497)
+ellipse_Z0497
+```
+
+## Group metrics
 
 ```{r}
 #| echo: false
@@ -20,7 +78,7 @@ knitr::kable(group_metrics)
 
 ```
 
-### Community metrics
+## Community metrics
 
 ```{r}
 #| echo: false
@@ -29,8 +87,15 @@ knitr::kable(community_metrics)
 
 ```
 
+### Overlap estimates
 
-## 2. Trophic diversity indices (Cucherousset et al, 2015)
+```{r}
+#| echo: false
+
+
+```
+
+## 2. Trophic diversity indices (Cucherousset et al., 2015)
 
 ### Z0508 - 25m
 
@@ -45,8 +110,7 @@ kableExtra::kbl(di_Z0508)
 
 ```
 
-![Trophic diversity indices station Z0508](Z0508_d13C_d15N.jpeg){width=580}
-
+![Trophic diversity indices station Z0508](Z0508_d13C_d15N.jpeg){width="580"}
 
 ### Z0492 - 370m
 
@@ -61,8 +125,7 @@ kableExtra::kbl(di_Z0492)
 
 ```
 
-![Trophic diversity indices station Z0492](Z0492_d13C_d15N.jpeg){width=580}  
-
+![Trophic diversity indices station Z0492](Z0492_d13C_d15N.jpeg){width="580"}
 
 ### Z0512 - 555m
 
@@ -77,7 +140,7 @@ kableExtra::kbl(di_Z0512)
 
 ```
 
-![Trophic diversity indices station Z0512](Z0512_d13C_d15N.jpeg){width=580}
+![Trophic diversity indices station Z0512](Z0512_d13C_d15N.jpeg){width="580"}
 
 ### Z0503 - 715m
 
@@ -91,7 +154,7 @@ targets::tar_load(di_Z0503)
 kableExtra::kbl(di_Z0503)
 ```
 
-![Trophic diversity indices station Z0503](Z0503_d13C_d15N.jpeg){width=580}
+![Trophic diversity indices station Z0503](Z0503_d13C_d15N.jpeg){width="580"}
 
 ### Z0518 - 1000m
 
@@ -105,7 +168,7 @@ targets::tar_load(di_Z0518)
 kableExtra::kbl(di_Z0518)
 ```
 
-![Trophic diversity indices station Z0518](Z0518_d13C_d15N.jpeg){width=580}
+![Trophic diversity indices station Z0518](Z0518_d13C_d15N.jpeg){width="580"}
 
 ### Z0524 - 1010m
 
@@ -119,7 +182,7 @@ targets::tar_load(di_Z0524)
 kableExtra::kbl(di_Z0524)
 ```
 
-![Trophic diversity indices station Z0524](Z0524_d13C_d15N.jpeg){width=580}
+![Trophic diversity indices station Z0524](Z0524_d13C_d15N.jpeg){width="580"}
 
 ### Z0497 - 1335m
 
@@ -134,4 +197,4 @@ kableExtra::kbl(di_Z0497)
 
 ```
 
-![Trophic diversity indices station Z0492](Z0497_d13C_d15N.jpeg){width=580}
+![Trophic diversity indices station Z0492](Z0497_d13C_d15N.jpeg){width="580"}

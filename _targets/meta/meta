@@ -3,21 +3,94 @@ CNraw|object|42996dd3df4f87f1|||||||||||||||
 CNraw.df|object|42c317dc58f151bd|||||||||||||||
 community.hulls.args|object|5b35691346e4c252|||||||||||||||
 community_list|stem|d7e3cf24677917ec|b17d2c6e8f0de016|8fb75deda0f036e8|-1129333493||t19375.42199947s|a3c4b57a6f0085ec|90|rds|local|vector|||0||
-community_metrics|stem|565626c7e86ca19a|e79721b30f5d37bc|4585eafbc6cb020b|-858492096||t19375.4721849426s|f73cea00d22be8c9|512|rds|local|vector|||1.46|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
+community_metrics|stem|95e3ddefde0d7029|c20714b7c20729db|543fcc8196e49a6d|-858492096||t19383.6046258145s|a5459509b7332ca9|501|rds|local|vector|||0.11|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
 d13C|object|160ef88160d8e135|||||||||||||||
 d15N|object|6f1c99f4abc39d32|||||||||||||||
-group.ellipses.args|object|4683675d77638553|||||||||||||||
+data_Z0492|stem|e09288e6319420fd|e784a86f9303a0bd|c3b5fc02cdc369c1|739020258||t19382.5382637424s|6ee40e43b8565e4f|1215|rds|local|vector|||0||
+di_Z0492|stem|07db088e0baf9041|bc26ab7b0b82b17e|2f0db0fe5fe338e5|-1592297583||t19383.5421033974s|55b9bd26e54ad190|246|rds|local|vector|||0.22||
+di_Z0497|stem|1d6b5feaaeb76554|81a0fb7103ff03c1|0655fb1b4202d8ff|63323373||t19383.5421113663s|55b9bd26e54ad190|246|rds|local|vector|||0.2||
+di_Z0503|stem|a4c809274e84d924|c9063b558b1deaba|f3482d97ecbddfed|1064449023||t19383.5420981118s|d34faae1f346fb15|226|rds|local|vector|||0.19||
+di_Z0508|stem|7d21bce934315f4b|36ee154ccea138d2|6f03dbfffb2f1f9c|384131814||t19383.5421003839s|f0ef80e5f0ea82e1|224|rds|local|vector|||0.18||
+di_Z0512|stem|eb5a56db2a56a461|fa1eca46aba40533|0bc649f574535037|209565487||t19383.5421062159s|f0ef80e5f0ea82e1|224|rds|local|vector|||0.21||
+di_Z0518|stem|1abc65babb3e6a30|02c47afd34a4614d|52a232ec218a8921|1589435304||t19383.5420955201s|7979acc55d607f70|242|rds|local|vector|||0.61||
+di_Z0524|stem|075e610683131e20|5257a9bb8ece518f|eef65b233da55d75|151006940||t19383.542108867s|b87462683b64d887|223|rds|local|vector|||0.22||
+diversity_indices|function|a4b9cc196ceafd01|||||||||||||||
+diversity_indices_Z0492|function|43df66813e9cc36c|||||||||||||||
+diversity_indices_Z0497|function|50037c14266ab949|||||||||||||||
+diversity_indices_Z05012|function|260236712055b61f|||||||||||||||
+diversity_indices_Z0503|function|335d419cccaec957|||||||||||||||
+diversity_indices_Z0508|function|662758cf4df74945|||||||||||||||
+diversity_indices_Z0512|function|5b64126bea61970e|||||||||||||||
+diversity_indices_Z0518|function|261dfc11cb5a2a8b|||||||||||||||
+diversity_indices_Z0524|function|a995cd42b8dbe28a|||||||||||||||
+diviersity_indices|function|4d105c7340d19e63|||||||||||||||
+ellipse_Z0492|stem|23d2adb5a927fcd7|3bb674e809b666a4|034fe859e75f7f88|-912603862||t19384.3207568126s|428ff7e054f4755d|117437|rds|local|vector|||1.2|1m22mUsing size aesthetic for lines was deprecated in ggplot2 3.4.0.36mℹ39m Please use linewidth instead.|
+ellipse_Z0497|stem|5c19b839ec41ecab|665654032e18a703|39a637e0cbc4c6c3|-2120108743||t19384.3207630589s|d5ba70923ddf0f1b|117377|rds|local|vector|||0.14||
+ellipse_Z0503|stem|c94769dd88b3cbfd|dd795b9bfb3e85bb|40ba4f5a0f7c8d6c|-1127822605||t19384.3207669032s|c62525541a0e348c|112877|rds|local|vector|||0.08|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
+ellipse_Z0508|stem|55ce992bd4c347bd|230971915ccb4134|e835da467d760e0d|-1803158926||t19384.3542014054s|25121e9386aa10d1|112976|rds|local|vector|||0.24||
+ellipse_Z0512|stem|d65a158a96d4c21b|7f1fc4e2d3efa69a|428a5fe16a21be55|-1215448335||t19397.3501626542s|587a03a8a4341c4b|113242|rds|local|vector|||1.27|1m22mUsing size aesthetic for lines was deprecated in ggplot2 3.4.0.36mℹ39m Please use linewidth instead.|
+ellipse_Z0518|stem|a9e3d7d9d294e4fb|70f1b4026a500e83|e974dff76fec0b90|1098305217||t19384.3541975108s|a2c703b2a03107cc|116873|rds|local|vector|||1.23|1m22mUsing size aesthetic for lines was deprecated in ggplot2 3.4.0.36mℹ39m Please use linewidth instead.|
+ellipse_Z0524|stem|2c206914b3a5c7f7|8ee980550708aa41|29f678a28f576fd4|-735120621||t19384.3519528009s|1699685da063fcb9|112791|rds|local|vector|||0.28|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
+group.ellipses.args|object|91b9ec68a36e5390|||||||||||||||
 group.hull.args|object|07dfca8d50bdf4e7|||||||||||||||
-group_metrics|stem|4a799ab731d10a19|96bf6cc7ab51588e|13b3799dcfeb7b94|-209028809||t19375.4721881415s|75fbf42179b53f38|1140|rds|local|vector|||0.25|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
-isotope_data|stem|34b9a09247f7b43b|ef4b162d36fe561d|83538aef404daf60|-804051723||t19375.3729370141s|8636f471274c538b|28405|rds|local|vector|||0.03||
-isotope_data_fish|stem|6e361b568c060763|1f38f5e16fce9ada|7b1abf96556e8abb|656275657||t19375.3729373397s|072616f336803f7e|28750|rds|local|vector|||0||
-prepare_siber_data|function|ad55d1c56b205aa7|||||||||||||||
+group_metrics|stem|16d55bed13f7d55b|eda22fce6c42654d|c785260a9d3c3d13|-209028809||t19383.6046241565s|1fcbaa6b3c0537ce|1119|rds|local|vector|||0.28|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
+ID_Z0492|function|b14f370b57df8c48|||||||||||||||
+ID_Z0492_analysis|stem|44ba62767572a71b|16e0991269924ac4|0d31a59529362e1a|1884221264||t19382.5919040156s||205|rds|local|vector|||0.01||impossible de trouver la fonction ID_Z0492
+IDiversity|function|1f1614e48b3a2ede|||||||||||||||
+individuals_si_Z0492|stem|e09288e6319420fd|e784a86f9303a0bd|c3b5fc02cdc369c1|-807802370||t19383.3370330071s|6ee40e43b8565e4f|1215|rds|local|vector|||0.01||
+individuals_si_Z0497|stem|7afedd846ece8e31|abb33e6dea71656a|c3b5fc02cdc369c1|-1659599712||t19383.417195246s|88eeeee5fa9a57d3|1229|rds|local|vector|||0||
+individuals_si_Z0503|stem|ea9df1484acc7de3|7f77237f93b6622e|c3b5fc02cdc369c1|1851602937||t19383.417196107s|5c7ba312a180c2bd|1014|rds|local|vector|||0||
+individuals_si_Z0508|stem|8976de21787e66c2|1690d47b57ee9a2f|c3b5fc02cdc369c1|328827491||t19383.4171965122s|faeee8adf00ba476|1288|rds|local|vector|||0||
+individuals_si_Z0512|stem|6b8e639dd05f37ad|7d11ceb02560bdef|c3b5fc02cdc369c1|-1093543439||t19383.4171948264s|dc2649c9b211ba3b|1149|rds|local|vector|||0||
+individuals_si_Z0518|stem|29f7a3d736f14eab|971563350433f456|c3b5fc02cdc369c1|-526049897||t19383.417195812s|f3b5bd3807f83288|1054|rds|local|vector|||0||
+individuals_si_Z0524|stem|b8e676c83a7dbdf8|c975e443b8c4defb|c3b5fc02cdc369c1|-1557437980||t19383.4171931912s|5e0deaec442d0efe|923|rds|local|vector|||0.03||
+IOverlap|function|3c742fc13d3285b2|||||||||||||||
+isotope_data|stem|bd7c1b6220fa58a1|694057bd322af3c5|83538aef404daf60|-804051723||t19383.6046043432s|ad72b0a746d2e9e3|28394|rds|local|vector|||0.05||
+isotope_data_fish|stem|e94675672759f972|f9e106430ecec41d|42458e68589955bf|656275657||t19397.3501460197s|1064d5cb6d698084|27138|rds|local|vector|||0.02||
+isotopic_space|function|bd917054125ebd2e|||||||||||||||
+meansexy|function|1c91232508c2754b|||||||||||||||
+meanSI_group|function|c74487de782e0b7d|||||||||||||||
+nm_si|object|49437d8d94748fe0|||||||||||||||
+parms|object|c2614de2667f6984|||||||||||||||
+plot_ellipse_Z0492|stem||3bb674e809b666a4|3a1f2716e344dca5|2022570604||t19375.5845910229s||0|rds|local|vector|||1.16|aucun argument trouvé pour min  Inf est renvoyé. aucun argument pour max  Inf est renvoyé. aucun argument trouvé pour min  Inf est renvoyé. aucun argument pour max  Inf est renvoyé|indice hors limites
+plot_Z0492|function|5d77cf201c9b5f28|||||||||||||||
+plot_Z0497|function|170a69568c1423a5|||||||||||||||
+plot_Z0503|function|9d00cc0912ea715a|||||||||||||||
+plot_Z0508|function|c1f8fcf6a0f83543|||||||||||||||
+plot_Z0512|function|f57e6e49f0d4fb67|||||||||||||||
+plot_Z0518|function|0f1118ccb9fa7284|||||||||||||||
+plot_Z0524|function|3b8419f3682e65c3|||||||||||||||
+plotz4092|stem||664b24331d8eac2e|97da24d336095f0f|-1763092432||t19383.6261429041s||0|rds|local|vector|||0.02||objet df_SECNZ0492 introuvable
+prepare_siber_data|function|7950acaaa486c036|||||||||||||||
 print_community_metrics|function|c0eb3d670fa4bca7|||||||||||||||
 print_group_metrics|function|bb9f6fd691b57a2a|||||||||||||||
 print_msg|function|4a8c3b11e858dce6|||||||||||||||
+priors|object|25ebe93867d4319a|||||||||||||||
 rawcomms|object|5567e884ab708cf3|||||||||||||||
 rawgroups|object|c356cc9e5d1ad4af|||||||||||||||
+scaleSI_range01|function|0564e938f2343dd0|||||||||||||||
+scl_tit_d13C|object|16e4c0714d1d6874|||||||||||||||
+scl_tit_d15N|object|04ff01ddaa1bde75|||||||||||||||
+scl_tit_d34S|object|0622097299f537cd|||||||||||||||
+scl_tit_dD|object|6180747539401978|||||||||||||||
+sea_z0492|function|bc7281bbd6fc919b|||||||||||||||
+siber_data|stem|c20acd2145be28df|214b1365fd9e0b40|f377b1cd01582ccf|-135298681||t19397.3501467799s|68ce885604cc02f4|3333|rds|local|vector|||0||
 SIBER_data|stem|66befe9e6d33a830|bd90faacd93dc17f|387e025889b04cc3|1952616516||t19375.4520071069s|0b95df2198482141|3363|rds|local|vector|||0||
+siber_data.df|stem|57dd14b145432335|b3c39d5f81ba35ec|6414e3ca83fdf78f|-1755347292||t19383.6046057221s|84e371748fa8eea4|3362|rds|local|vector|||0||
 siber_loop_community|function|d567398378e81dbb|||||||||||||||
-siber_plot|stem|15d7f6b08f6e9a66|aba66e68fa815fda|2077a899733c8c00|257116883||t19375.4520209128s|a1c456b03adbfbf8|44|rds|local|vector|||1.17|At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.. At least one of your groups has less than 5 observations.          The absolute minimum sample size for each group is 3 in order          for the various ellipses and corresponding metrics to be           calculated. More reasonably though, a minimum of 5 data points          are required to calculate the two means and the 2x2 covariance           matrix and not run out of degrees of freedom. Check the item           named sample.sizes in the object returned by this function           in order to locate the offending group. Bear in mind that NAs in           the sample.size matrix simply indicate groups that are not           present in that community, and is an acceptable data structure           for these analyses.|
-siber_plot_community|function|cee51241a71e4e3f|||||||||||||||
+siber_plot|stem|15d7f6b08f6e9a66|18de0de04132e4ef|11c2dc4392c7935d|257116883||t19375.573412275s||44|rds|local|vector|||1.33|aucun argument trouvé pour min  Inf est renvoyé. aucun argument pour max  Inf est renvoyé. aucun argument trouvé pour min  Inf est renvoyé. aucun argument pour max  Inf est renvoyé|indice hors limites
+siber_plot_community|function|2f637b3463d3fa60|||||||||||||||
+species_status_biomass|stem|41d1522779a2eeae|f64375981ff410e7|c3b5fc02cdc369c1|885015835||t19382.5382633973s|1e57d6a9b74181c7|427|rds|local|vector|||0.01||
+species_status_biomass_Z0492|stem|41d1522779a2eeae|f64375981ff410e7|c3b5fc02cdc369c1|-1315080317||t19383.3370335199s|1e57d6a9b74181c7|427|rds|local|vector|||0||
+species_status_biomass_Z0497|stem|fd0e5fb4d524c193|bcc1051b0846f090|c3b5fc02cdc369c1|-912840838||t19383.4171956077s|9fdc1e0d0bbc131d|417|rds|local|vector|||0.02||
+species_status_biomass_Z0503|stem|e2e2f88f061ae604|4a3935d307426dfd|c3b5fc02cdc369c1|-1585913863||t19383.4171966929s|e634ea2609ddfae9|387|rds|local|vector|||0||
+species_status_biomass_Z0508|stem|31e47f16030df6ae|4a8ef0c4fce78f90|c3b5fc02cdc369c1|360237047||t19383.4171940995s|a28d2cbb8a8abbab|369|rds|local|vector|||0.02||
+species_status_biomass_Z0512|stem|ee92df629c6bfafb|bb2dfee0df833921|c3b5fc02cdc369c1|-1184919322||t19383.4171945627s|c047e2a96adccb67|386|rds|local|vector|||0.02||
+species_status_biomass_Z0518|stem|9329f4c08d7285e7|819e541c827b81e1|c3b5fc02cdc369c1|798227789||t19383.4171950652s|89184385696fd671|421|rds|local|vector|||0||
+species_status_biomass_Z0524|stem|273482c9831c0cd5|acdf87bc89a00f14|c3b5fc02cdc369c1|263339690||t19383.4171963307s|e8f841da6aca5d39|402|rds|local|vector|||0.02||
+station_z0497|object|fabe5c188bb45879|||||||||||||||
+tit_d13C|object|b88298043f9b7304|||||||||||||||
+tit_d15N|object|b3ddf621c068e1d1|||||||||||||||
+tit_d34S|object|ba714c8f707494dd|||||||||||||||
+tit_dD|object|785866c3065ddb25|||||||||||||||
+trophic_indices_Z0492|function|07e146f9967fb842|||||||||||||||

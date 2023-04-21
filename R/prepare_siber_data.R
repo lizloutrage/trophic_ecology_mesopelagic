@@ -19,8 +19,8 @@ prepare_siber_data <- function (isotope_data){
   # extract only the relevant data from the full data frame
   d13C <- isotope_data [,26]
   d15N <- isotope_data [,30]
-  rawgroups <- isotope_data [,14]
-  rawcomms <- isotope_data[,15] 
+  rawgroups <- isotope_data [,15]
+  rawcomms <- isotope_data[,14] 
   
   #Creating a matrix with all those ordered properly
   CNraw <- cbind (d13C, d15N, rawgroups, rawcomms)
