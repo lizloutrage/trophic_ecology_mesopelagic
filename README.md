@@ -1,56 +1,36 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# trophic\_ecology\_mesopelagic
+# :fish: :fork_and_knife: trophic ecology of deep-sea fishes in the Bay of Biscay, Northeast Atlantic
 
 <!-- badges: start -->
+
+[![License:
+GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://choosealicense.com/licenses/gpl-2.0/)
 <!-- badges: end -->
 
-Research Compendium of the project **{{ PLEASE ADD A FEW WORDS }}**
+The aim of the `trophic_ecology_mesopelagic` project is to study the
+trophic ecology of 12 deep pelagic fish species sampled at seven
+different trawl depths on the continental slope of the Bay of Biscay.
 
-### How to cite
+## Overview
 
-Please cite this compendium as:
+Here is an overview of `trophic_ecology_mesopelagic` content:
 
-> **{{ PLEASE ADD A CITATION }}**
+- [`data/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/data):
+  contains all raw data required to perform analyses
 
-### Content
+- [`R/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/R):
+  contains the functions to run the analysis
 
-This repository is structured as follow:
+- [`index.qmd`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/index.qmd):
+  contains the final report to be knitted with the code to carry out the
+  analysis
 
--   [`data/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/data):
-    contains all raw data required to perform analyses
+- [`figures/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/figures):
+  contains the figures in high resolution
 
--   [`analyses/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/analyses/):
-    contains R scripts to run each step of the workflow
+## Code of Conduct
 
--   [`outputs/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/outputs):
-    contains all the results created during the workflow
-
--   [`figures/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/figures):
-    contains all the figures created during the workflow
-
--   [`R/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/R):
-    contains R functions developed especially for this project
-
--   [`man/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/man):
-    contains help files of R functions
-
--   [`DESCRIPTION`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/DESCRIPTION):
-    contains project metadata (author, date, dependencies, etc.)
-
--   [`make.R`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/master/make.R):
-    main R script to run the entire project by calling each R script
-    stored in the `analyses/` folder
-
-### Usage
-
-Clone the repository, open R/RStudio and run:
-
-    source("make.R")
-
-### Notes
-
--   All required packages, listed in the `DESCRIPTION` file, will be
-    installed (if necessary)
--   All required packages and R functions will be loaded
--   Some analyses listed in the `make.R` might take time
+Please note that the `ontogeny_deep_pelagic_fish` project is released
+with a [Contributor Code of
+Conduct](https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html).
+By contributing to this project, you agree to abide by its terms.

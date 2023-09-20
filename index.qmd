@@ -1,200 +1,1057 @@
 ---
 title: "index"
-format: html
-editor: source
+author: "Liz Loutrage"
+format:
+  html:
+    self-contained: true
 theme: minty
+keep-md: true
+execute:
+  warning: false
+  message : false
 toc: true
 toc-title: Sections
 toc-location: left
+page-layout: full
 ---
 
-# 1. SIBER (Jackson et al., 2011)
+# 1. Data
+```{r}
+#| echo: false
+#| warning: false
+#| code-fold: true
+#| label: load_data
+
+# Library
+library(dplyr)
+library(ggplot2)
+library(ellipse)
+
+# load data 
+
+## Isotope data 
+isotope_data <-  utils::read.csv(here::here("data", "isotopic_data_2021.csv"), sep = ";", header = T,dec = ",")
+
+isotope_data_fish <- isotope_data %>%
+  # only fish 
+  filter(taxon == "Fish")%>%
+  mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))%>%
+  arrange(species)
+
+## trawling data 
+trawling_data_evhoe21 <-  utils::read.csv(here::here("data", "trawling_data_evhoe_2021.csv"), sep = ";", header = T, dec = ".")
+
+# density distribution from biomass value 
+density_distribution <- trawling_data_evhoe21%>%
+  select(Nom_Scientifique, Tot_V_HV, Code_Station)%>%
+  #selection of mesopelagic trawling 
+  filter(Code_Station%in% c("Z0524", "Z0518", "Z0512", "Z0508", 
+                            "Z0503", "Z0497", "Z0492"))%>%
+  #selection of species sampled for isotope 
+  filter(Nom_Scientifique%in%c("Arctozenus risso", "Argyropelecus olfersii", "Benthosema glaciale",
+                               "Cyclothone", "Lampanyctus crocodilus", "Lampanyctus macdonaldi",
+                               "Lestidiops sphyrenoides", "Maulisia argipalla", "Maurolicus muelleri",
+                               "Melanostigma atlanticum", "Myctophum punctatum", "Notoscopelus bolini",
+                               "Notoscopelus kroyeri", "Searsia koefoedi", "Serrivomer beanii",
+                               "Xenodermichthys copei"))%>%
+  mutate(Nom_Scientifique=recode(Nom_Scientifique, "Cyclothone"="Cyclothone spp."))%>%
+  mutate(trawling_depth= case_when(Code_Station %in% c("Z0508") ~25,
+                                   Code_Station %in% c("Z0492") ~370,
+                                   Code_Station%in% c("Z0512") ~555,
+                                   Code_Station %in% c("Z0503") ~715,
+                                   Code_Station %in% c("Z0518") ~1000,
+                                   Code_Station %in% c("Z0524") ~1010,
+                                   Code_Station %in% c("Z0497") ~1335))%>%
+  distinct()%>%
+  group_by(Nom_Scientifique)%>%
+  mutate(sum_sp=sum(Tot_V_HV))%>%
+  ungroup()%>%
+  group_by(trawling_depth, Nom_Scientifique)%>%
+  mutate(pourcentage_bio=sum(Tot_V_HV/sum_sp*100))%>%
+  # Selection of trawling depth 
+  select(Nom_Scientifique, trawling_depth, pourcentage_bio)%>%
+  # to have a round number to be able to multiply it afterwards 
+  mutate(across(pourcentage_bio, round, 0)) %>%
+  mutate(n_bio = as.integer(pourcentage_bio))%>%
+  select(-c(pourcentage_bio))%>%
+  tidyr::uncount(n_bio)
+```
+```{r}
+#| echo: false
+#| warning: false
+#| label: summary_data_sp
+
+isotope_data_sum <- isotope_data%>%
+  group_by(species)%>%
+  mutate(mean_d13c=mean(d13c),
+         sd_d13c=sd(d13c),
+         mean_d15n=mean(d15n),
+         sd_d15n=sd(d15n),
+         n=n())%>%
+  select(species, mean_d13c, sd_d13c, mean_d15n, sd_d15n, n, number_ind_pool, family)%>%
+  distinct()%>%
+  mutate(across(where(is.numeric), round, 2))
+
+htmltools::tagList(DT::datatable(isotope_data_sum))
+```
+
+# 2. Isotopic niches 
 
 ## Ellipses
-
-### Station Z0508 - 25m
-
+-  ellipses at 40%
+-  Δ  $\delta$<sup>13</sup>C = 2.36‰
+-  Δ  $\delta$<sup>15</sup>N = 5.94‰
 ```{r}
-#| echo: false
-par(mfrow =c(3,3))
-targets::tar_load(ellipse_Z0508)
-ellipse_Z0508
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 8
+#| label: community_ellipses
+
+niche_plot_community <- isotope_data%>%
+  mutate(species= gsub("_"," ", species))%>%
+    mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))
+
+# colors selection 
+nichecol_krill <- c("#E4A33A", "#F67451", "#D664BE", "#3DA5D9", "#94b3ae",
+                    "#18206F", "#FD151B", "#049A8F", "#072AC8", "black", "purple", 
+                    "#d193f7", "#d8c2ab", "#678FCB", "#A63A49", "#00547A", "#6B54A0")
+
+# size of the ellipse 
+p.ell<-0.40
+ 
+# plot
+ggplot(data = niche_plot_community, 
+                         aes(x = d13c, 
+                             y = d15n)) + 
+  geom_point(aes(color = species, shape= taxon), size = 2) +
+  scale_color_manual(values=nichecol_krill)+  
+  scale_fill_manual(values=nichecol_krill)+
+  scale_shape_manual(values= c(19, 3))+
+  scale_x_continuous(expression({delta}^13*C~'\u2030'), limits = c(-21, -18.5)) +
+  scale_y_continuous(expression({delta}^15*N~'\u2030'), limits = c(7, 14))+
+  stat_ellipse(aes(group = species, fill = species, color = species), 
+               alpha = 0.2, level = p.ell,linewidth = 0.7, type = "norm", geom = "polygon")+
+  theme_light()+
+  theme(legend.text = element_text(size=15),
+        legend.title = element_text(size=15),
+        axis.title = element_text(size=15),
+        axis.text = element_text(size=15))+
+  labs(shape="Taxon", col= "Species", fill="Species")
+
+#ggsave("niches_community.png", path = "figures", dpi = 700, height = 10, width = 12)
 ```
 
-### Station Z0492 - 370m
-
+## Niche areas
 ```{r}
 #| echo: false
-targets::tar_load(ellipse_Z0492)
-ellipse_Z0492
-```
+#| message: false
+#| warning: false
+#| label: niche_area_community
+#| fig-align: center
+#| fig-width: 12
+#| fig-height: 8
 
-### Station Z0512 - 555m
+# Model initialization ----
+# options for running jags
+parms <- list()
+parms$n.iter <- 2 * 10^4   # number of iterations to run the model for
+parms$n.burnin <- 1 * 10^3 # discard the first set of values
+parms$n.thin <- 10     # thin the posterior by this many
+parms$n.chains <- 2        # run this many chains
+parms$save.output = FALSE
+parms$save.dir = tempdir()
 
-```{r}
-#| echo: false
-targets::tar_load(ellipse_Z0512)
-ellipse_Z0512
-```
+# define the priors
+priors <- list()
+priors$R <- 1 * diag(2)
+priors$k <- 2
+priors$tau.mu <- 1.0E-3
 
-### Station Z0503 - 715m
+# Niche area ----
+community_siber <- isotope_data_fish%>%
+  select(-group)%>%
+  mutate(group = species, 
+         # All species in the same community (no segregation by depth)
+         community = "",
+         iso1=d13c,
+         iso2 =d15n,
+         .keep = "unused")%>%
+  select(group, community, iso1, iso2)%>%
+  relocate(iso1, .before = group)%>%
+  relocate(iso2, .after = iso1)%>%
+  # Reorder species by SEA
+  mutate(group_order = forcats::fct_relevel(group, c("Searsia_koefoedi", "Lampanyctus_crocodilus",
+                                              "Myctophum_punctatum", "Benthosema_glaciale",
+                                              "Xenodermichthys_copei", "Lampanyctus_macdonaldi",
+                                              "Serrivomer_beanii", "Cyclothone spp.", "Argyropelecus_olfersii",
+                                              "Melanostigma_atlanticum", "Arctozenus_risso", "Maulisia_argipalla",
+                                              "Notoscopelus_kroyeri", "Lestidiops_sphyrenoides",
+                                              "Notoscopelus_bolini", "Maurolicus_muelleri"))) %>%
+  arrange(group_order)%>%
+  select(-group)%>%
+  rename("group"="group_order")%>%
+  relocate(community, .after = group)
 
-```{r}
-#| echo: false
-targets::tar_load(ellipse_Z0503)
-ellipse_Z0503
-```
+# create the siber object
+community_siber_obj <- SIBER::createSiberObject(community_siber)
 
-### Station Z0518 - 1000m
+# Calculate summary statistics for each group: TA, SEA and SEAc
+group_ML <- SIBER::groupMetricsML(community_siber_obj)
 
-```{r}
-#| echo: false
-targets::tar_load(ellipse_Z0518)
-ellipse_Z0518
-```
+# fit the ellipses which uses an Inverse Wishart prior
+# on the covariance matrix Sigma, and a vague normal prior on the 
+# means. Fitting is via the JAGS method.
+ellipses_posterior_community <- SIBER::siberMVN(community_siber_obj, parms, priors)
+SEA_B_community <- SIBER::siberEllipses(ellipses_posterior_community)
 
-### Station Z0524 - 1010m
+# colors 
+clrs_com <- matrix(c( "#e4c3c8", "#c98891", "#A63A49",
+                      "#dee8e6", "#bed1ce", "#94b3ae", 
+                      "#F5E9FD", "#E7C9FB", "#d193f7",
+                      "#f2d0eb", "#e6a2d8", "#D664BE",
+                      "#d2cbe2", "#a698c6", "#6B54A0",
+                      "#b9bcd3", "#5d629a", "#18206F",
+                      "#b2cbd7", "#6698af", "#00547A",
+                      "#c4e4f3", "#8ac9e8", "#3DA5D9",
+                      "#fcd5ca", "#f9ab96", "#F67451",
+                      "#ECD7F9", "#D09CF1", "purple",
+                      "#F9ECD7", "#F1D09C", "#E4A33A",
+                      "#cceae8", "#68c2bb", "#049A8F",
+                      "#c2d2ea", "#a3bbdf", "#678FCB",
+                      "#fed0d1", "#fe8a8d", "#FD151B",
+                      "#f3ece5", "#e7dacc", "#d8c2ab",
+                      "#CDD4F4", "#8394E3", "#072AC8"), nrow = 3, ncol = 16)
 
-```{r}
-#| echo: false
-targets::tar_load(ellipse_Z0524)
-ellipse_Z0524
-```
+# save plot in high quality 
+#tiff("SEA.tiff", units="in", width=10, height=7, res=700)
 
-### Station Z0497 - 1335m
+# plot
+SIBER::siberDensityPlot(SEA_B_community, xticklabels = colnames(group_ML),
+                        ylab = expression("Standard Ellipse Area" ('\u2030' ^2) ),
+                        bty = "L",
+                        las = 1,
+                        xlab = "",
+                        #clr = clrs_com,
+                        ylims = c(0,1.5))
 
-```{r}
-#| echo: false
-targets::tar_load(ellipse_Z0497)
-ellipse_Z0497
-```
+# Add x's for the ML estimated SEA-c
+points(1:ncol(SEA_B_community), group_ML[3,], col="red", pch = "x", lwd = 2)
 
-## Group metrics
+#dev.off()
 
-```{r}
-#| echo: false
-targets::tar_load(group_metrics)
-knitr::kable(group_metrics)
+cr.p <- c(0.95, 0.99) # vector of quantiles
 
-```
-
-## Community metrics
-
-```{r}
-#| echo: false
-targets::tar_load(community_metrics)
-knitr::kable(community_metrics)
-
-```
-
-### Overlap estimates
-
-```{r}
-#| echo: false
-
-
-```
-
-## 2. Trophic diversity indices (Cucherousset et al., 2015)
-
-### Z0508 - 25m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0508)
-targets::tar_load(species_status_biomass_Z0508)
-targets::tar_load(di_Z0508)
-kableExtra::kbl(di_Z0508)
-
-```
-
-![Trophic diversity indices station Z0508](Z0508_d13C_d15N.jpeg){width="580"}
-
-### Z0492 - 370m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0492)
-targets::tar_load(species_status_biomass_Z0492)
-targets::tar_load(di_Z0492)
-kableExtra::kbl(di_Z0492)
-
-```
-
-![Trophic diversity indices station Z0492](Z0492_d13C_d15N.jpeg){width="580"}
-
-### Z0512 - 555m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0512)
-targets::tar_load(species_status_biomass_Z0512)
-targets::tar_load(di_Z0512)
-kableExtra::kbl(di_Z0512)
-
-```
-
-![Trophic diversity indices station Z0512](Z0512_d13C_d15N.jpeg){width="580"}
-
-### Z0503 - 715m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0503)
-targets::tar_load(species_status_biomass_Z0503)
-targets::tar_load(di_Z0503)
-kableExtra::kbl(di_Z0503)
-```
-
-![Trophic diversity indices station Z0503](Z0503_d13C_d15N.jpeg){width="580"}
-
-### Z0518 - 1000m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0518)
-targets::tar_load(species_status_biomass_Z0518)
-targets::tar_load(di_Z0518)
-kableExtra::kbl(di_Z0518)
-```
-
-![Trophic diversity indices station Z0518](Z0518_d13C_d15N.jpeg){width="580"}
-
-### Z0524 - 1010m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0524)
-targets::tar_load(species_status_biomass_Z0524)
-targets::tar_load(di_Z0524)
-kableExtra::kbl(di_Z0524)
-```
-
-![Trophic diversity indices station Z0524](Z0524_d13C_d15N.jpeg){width="580"}
-
-### Z0497 - 1335m
-
--   Variation coefficients (intraspecific variability)
-
-```{r}
-#| echo: false
-targets::tar_load(individuals_si_Z0497)
-targets::tar_load(species_status_biomass_Z0497)
-targets::tar_load(di_Z0497)
-kableExtra::kbl(di_Z0497)
+# do similar to get the modes, taking care to pick up multimodal posterior
+# distributions if present
+SEA_B_community_modes <- lapply(
+  as.data.frame(SEA_B_community), 
+  function(x,...){tmp<-hdrcde::hdr(x)$mode},
+  prob = cr.p, all.modes=T)
 
 ```
 
-![Trophic diversity indices station Z0492](Z0497_d13C_d15N.jpeg){width="580"}
+
+## Overlaps
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| code-fold: true
+#| fig-width: 9
+#| fig-height: 6
+#| label: community_overlaps
+
+# Prepare data 
+mat_overlap_data <- isotope_data%>%
+  filter(taxon=="Fish")%>%
+  mutate(species= gsub("_"," ", species))%>%
+  mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))
+
+# Arrange species by their d15n values 
+mat_overlap <- mat_overlap_data%>%
+  group_by(species)%>%
+  mutate(mean_d15n=mean(d15n))%>%
+  arrange(mean_d15n)%>%
+  as.data.frame()
+
+# ellipse at 40%
+test.elp_community <- rKIN::estEllipse(data= mat_overlap,  x="d13c", y="d15n", group="species", levels=40, smallSamp = TRUE)
+
+# Extract the area of each polygon
+elp.area_community <- rKIN::getArea(test.elp_community)
+
+# determine polygon overlap for all polygons
+elp.olp_community <- rKIN::calcOverlap(test.elp_community)%>%
+  #renames rownames
+  mutate(OverlapID= gsub("_"," ", OverlapID))%>%
+  mutate(OverlapID= gsub("40","", OverlapID))%>%
+  mutate(across(where(is.numeric), round, 2))%>%
+  tibble::column_to_rownames("OverlapID")%>%
+  as.data.frame()
+
+#renames colnames
+colnames(elp.olp_community)<- gsub(x =colnames(elp.olp_community), pattern = "_", replacement = " ")
+colnames(elp.olp_community)<- gsub(x =colnames(elp.olp_community), pattern = "40", replacement = "")
+
+#plot 
+ggcorrplot::ggcorrplot(elp.olp_community, lab = T, outline.color = "white", lab_size = 3, tl.cex = 10)+
+  scale_fill_gradient2(limit = c(0,1), low = "white", high = "grey50", mid = "grey80", midpoint = 0.5)+
+  labs(fill="Overlap value")+
+  theme(axis.text = element_text(face="italic", size = 10),
+        legend.text = element_text(size=10),
+        legend.title = element_text(size=10),
+        plot.background = element_rect(colour = "white"))
+
+#ggsave("matrix_overlap.png", path = "figures", dpi = 700, width = 8, height = 6)
+```
+
+
+# 3. Depth segregation
+## Cluster 
+- input data for cluster = overlap matrix 
+- depth distribution = from complete 2021 trawling data (not only individuals sampled for isotope)
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| code-fold: true
+#| fig-align: center
+#| label: cluster
+
+# calculate median depth by species with trawling data set 2021
+mean_depth_sp <- density_distribution%>%
+  group_by(Nom_Scientifique)%>%
+  mutate(median_depth=median(trawling_depth))%>%
+  select(Nom_Scientifique, median_depth)%>%
+  distinct()%>%
+  ungroup()%>%
+  arrange(Nom_Scientifique)%>%
+  rename(species=Nom_Scientifique)
+
+# calcul overlap ellipse 40%
+test.elp_community <- rKIN::estEllipse(data= isotope_data_fish,  x="d13c", y="d15n", group="species", levels=40, smallSamp = TRUE)
+elp.olp_community <- rKIN::calcOverlap(test.elp_community)
+
+df <- elp.olp_community%>%
+  tibble::column_to_rownames(var="OverlapID")%>%
+  as.data.frame()
+
+# Gap statistic
+factoextra::fviz_nbclust(df, kmeans, nstart = 25,  method = "gap_stat", nboot = 50, verbose = FALSE)+
+  labs(subtitle = "Gap statistic method")
+
+res.km <- kmeans(scale(df),5, nstart = 25)
+
+# Réduction de dimension en utilisant l'ACP
+res.pca <- prcomp(df[, -5],  scale = TRUE)
+# Coordonnées des individus
+ind.coord <- as.data.frame(factoextra::get_pca_ind(res.pca)$coord)
+# Ajouter les clusters obtenus à l'aide de l'algorithme k-means
+ind.coord$cluster <- factor(res.km$cluster)
+# Percentage of variance explained by dimensions
+eigenvalue <- round(factoextra::get_eigenvalue(res.pca), 1)
+variance.percent <- eigenvalue$variance.percent
+
+# Add species names and median depth 
+ind.coord_depth <- cbind(ind.coord, mean_depth_sp)
+ind.coord_depth$median_depth <- as.factor(ind.coord_depth$median_depth)
+
+```
+
+## Cluster and depth distribution
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 8
+#| label: density_cluster_plot
+
+# Cluster plot ----
+cluster_plot <- ggpubr::ggscatter(
+  ind.coord_depth, x = "Dim.1", y = "Dim.2",
+  color = "cluster", shape = "median_depth", 
+  ellipse = TRUE, ellipse.type = "convex",
+  palette = c("#007A75","#150578", "#B80050", "#845EC2", "#E77823"),
+  size = 2.5, ggtheme = theme_minimal(),
+  add.params = list(size=0.1),
+  xlab = paste0("Dim 1 (", variance.percent[1], "% )" ),
+  ylab = paste0("Dim 2 (", variance.percent[2], "% )" )) +
+  scale_shape_manual(values = c(15, 8, 16, 2, 17, 18, 4))+
+  labs(shape="Median depth (m)")+
+  theme(plot.background = element_rect(color = "white"),
+        legend.text = element_text(size=10.5),
+        legend.title = element_text(size=10.5),
+        axis.text = element_text(size=10.5),
+        axis.title =element_text(size=10.5))+
+  guides(col="none", fill="none")+
+  ggrepel::geom_text_repel(label= ind.coord_depth$species, aes(col=cluster), size=4, box.padding = 0.5) +
+  scale_color_manual(values = c("#007A75","#150578", "#B80050", "#845EC2", "#E77823"))
+
+# Density plot----
+# assigne each species to a cluster 
+density_distribution_cluster <- density_distribution%>%
+  mutate(cluster=case_when(Nom_Scientifique%in% c("Argyropelecus olfersii", "Lampanyctus crocodilus",
+                                                  "Benthosema glaciale","Myctophum punctatum","Serrivomer beanii")~4,
+                           Nom_Scientifique%in% c("Lampanyctus macdonaldi", "Maulisia argipalla",
+                                                  "Searsia koefoedi")~5,
+                           Nom_Scientifique%in% c("Cyclothone spp.","Notoscopelus bolini", "Notoscopelus kroyeri",
+                                                  "Melanostigma atlanticum")~3,
+                           Nom_Scientifique%in% c("Xenodermichthys copei", "Maurolicus muelleri")~1,
+                           Nom_Scientifique%in% c("Arctozenus risso","Lestidiops sphyrenoides")~2))%>%
+  group_by(Nom_Scientifique)%>%
+  arrange(desc(trawling_depth))
+
+# Order in function of median depth
+density_distribution_cluster$Nom_Scientifique = with(density_distribution_cluster, reorder(Nom_Scientifique, cluster, min))  
+
+density_plot <-ggplot(density_distribution_cluster,
+                      aes(x = trawling_depth, y = Nom_Scientifique, group = Nom_Scientifique, 
+                          col=factor(cluster), fill=factor(cluster)))+ 
+  scale_fill_manual(values = c("#150578", "#E77823", "#007A75","#845EC2", "#B80050"))+
+  scale_color_manual(values = c("#150578", "#E77823", "#007A75","#845EC2", "#B80050"))+
+  ggridges::stat_density_ridges(quantile_lines = TRUE, quantiles = 0.5 , alpha=0.4, size=0.4)+
+  theme_classic()+
+  theme(axis.text.y = element_text(size=7))+
+  scale_y_discrete(position = "right")+
+  scale_x_reverse()+
+  coord_flip()+
+  ylab(label = "")+ xlab("Depth (m)")+
+  theme(axis.text.y = element_text(size=10.5),
+        axis.text.x = element_text(face="italic", size=10.5, angle=80, vjust = 0.5, hjust=0),
+        axis.title.x = element_text(size=10.5),
+        axis.title.y = element_text(size=10.5))+
+  guides(fill="none", col="none", alpha="none")
+
+ggpubr::ggarrange(cluster_plot, density_plot, ncol=1, labels = c("A", "B"), heights = c(1, 1.3))
+#ggsave("cluster_density.png", path = "figures", dpi = 700, height = 8, width = 10)
+```
+
+# 4. Isotopic diversity index 
+## Definitions
+
+- __Isotopic divergence__ : tends to 1 when all points (or their weights) are located at the edge of the convex hull, i.e. when the oragnisms with the most extreme isotopic values dominate the food web
+
+- __Isotopic dispersion__: equal to 1 when most points (or their weights) are far from the center of gravity of the point group, i.e. when organisms tend to have contrasting isotopic values 
+
+- __Isotopic evenness__: tends to 1 when all organisms are equally distributed in isotopic space
+
+- __Isotopic uniqueness__: tends to 1 when most organisms (or their weights) are isolated in isotopic space, i.e. when most organisms (or those with the highest abundance) are isolated in isotopic space, their isotopic values are very different from the rest of the organisms 
+
+## Representativeness of sampling 
+- Percentage of species biomass in each station 
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: representativeness_sampling 
+
+# Species % biomass and abundance by station 
+species_abundance <- trawling_data_evhoe21%>%
+  # selection of mesopelagic trawl 
+  filter(Code_Station%in% c("Z0524", "Z0518", "Z0512", "Z0508", 
+                            "Z0503", "Z0497", "Z0492"))%>%
+  #deletion when only genus name and genus already sampled in isotopy + A. carbo
+  filter(!Nom_Scientifique%in%c("Cyclothone braueri","Cyclothone microdon", 
+                                "Myctophidae", "Aphanopus carbo"))%>%
+  select(Code_Station, Nbr, Nom_Scientifique, Tot_V_HV)%>%
+  group_by(Nom_Scientifique, Code_Station)%>%
+  mutate(nb_ind= sum(Nbr))%>%
+  select(-Nbr)%>%
+  distinct()%>%
+  group_by(Code_Station)%>%
+  mutate(sum_biomass_station=sum(Tot_V_HV))%>%
+  ungroup()%>%
+  group_by(Code_Station, Nom_Scientifique)%>%
+  mutate(pourcentage_biomass_sp= Tot_V_HV/sum_biomass_station*100)%>%
+  select(Nom_Scientifique, pourcentage_biomass_sp, nb_ind, Code_Station)%>%
+  mutate(across(where(is.numeric), round, 2))
+  
+htmltools::tagList(DT::datatable(species_abundance))
+```
+
+
+## Calculation
+-  Formatting of data and calculation of relative biomass within each station
+
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: data_formatting
+
+# Load data 
+isotope_data_fish <- isotope_data %>% filter (species != "Meganyctiphanes_norvegica")
+
+# sourcing the R functions from 'si_div' R script
+source("R/si_div.R")
+
+# Format indiviudal_si
+individuals_si <- isotope_data_fish %>%
+  select(individual_code, station, d13c, d15n, species_code) %>%
+  rename(indiv_ID=individual_code,
+         d13C= d13c,
+         d15N =d15n,
+         Species_code= species_code)%>%
+  arrange(Species_code)
+
+# species_status_biomass ----
+# with all species sampled (not only species sampled for isotope)
+
+# load total trawling data evhoe 2021
+trawling_data_evhoe21 <-  utils::read.csv(here::here("data", "trawling_data_evhoe_2021.csv"), sep = ";", header = T, dec = ".")
+
+species_status_biomass <- trawling_data_evhoe21%>%
+ # selection of mesopelagic trawl 
+  filter(Code_Station%in% c("Z0524", "Z0518", "Z0512", "Z0508", 
+                            "Z0503", "Z0497", "Z0492"))%>%
+  #deletion when only genus name and genus already sampled in isotope + A. carbo
+  filter(!Nom_Scientifique%in%c("Cyclothone braueri","Cyclothone microdon", "Myctophidae",
+                                "Aphanopus carbo","Lampanyctus"))%>%
+  select(Code_Station, Tot_V_HV, Nom_Scientifique, Code_Espece_Campagne)%>%
+  distinct()%>%
+  # sum species biomass by depth 
+  group_by(Nom_Scientifique, Code_Station)%>%
+  mutate(biomass_sp=sum(Tot_V_HV))%>%
+  select(-Tot_V_HV)%>%
+  distinct()%>%
+  # sum of total biomass by station
+  group_by(Code_Station)%>%
+  mutate(biomass_tot=sum(biomass_sp))%>%
+  # relative biomass of each species by station
+  mutate(rel_biomass=biomass_sp/biomass_tot*100)%>%
+  select(-c(biomass_sp, biomass_tot))%>%
+  # selection of species sampled for isotopy in each depth 
+  filter(Code_Station== "Z0492"& 
+           Nom_Scientifique%in% c("Arctozenus risso", "Argyropelecus olfersii",
+                                  "Lampanyctus crocodilus", "Myctophum punctatum",
+                                  "Notoscopelus kroyeri", "Xenodermichthys copei")|
+           Code_Station== "Z0497"& 
+           Nom_Scientifique%in% c("Argyropelecus olfersii", "Lampanyctus crocodilus", 
+                                  "Lampanyctus macdonaldi", "Myctophum punctatum",
+                                  "Serrivomer beanii", "Xenodermichthys copei")|
+           Code_Station== "Z0503"& 
+           Nom_Scientifique%in% c("Arctozenus risso","Cyclothone","Lampanyctus crocodilus",
+                                  "Serrivomer beanii", "Xenodermichthys copei")|
+           Code_Station== "Z0508"& 
+           Nom_Scientifique%in% c("Lestidiops sphyrenoides", "Maurolicus muelleri", 
+                                   "Myctophum punctatum","Notoscopelus kroyeri",
+                                  "Notoscopelus bolini")|
+           Code_Station== "Z0512"& 
+           Nom_Scientifique%in% c("Arctozenus risso","Argyropelecus olfersii",
+                                  "Lampanyctus crocodilus","Notoscopelus kroyeri",
+                                  "Xenodermichthys copei")|
+           Code_Station== "Z0518"& 
+           Nom_Scientifique%in% c("Argyropelecus olfersii","Lampanyctus crocodilus",
+                                  "Benthosema glaciale", "Maulisia argipalla",
+                                  "Searsia koefoedi", "Serrivomer beanii")|
+           Code_Station== "Z0524"& 
+           Nom_Scientifique%in% c("Argyropelecus olfersii","Lampanyctus crocodilus",
+                                  "Melanostigma atlanticum",  "Serrivomer beanii",
+                                  "Xenodermichthys copei"))%>%
+  mutate(Species_code= tolower(Code_Espece_Campagne))%>%
+  rename(Species_name= Nom_Scientifique,
+         Status=Code_Station)%>%
+  select(-Code_Espece_Campagne)%>%
+  relocate(Status, .after=rel_biomass)%>%
+  relocate(Species_code,.after = Species_name)%>%
+  arrange(Species_name)
+```
+
+
+### 25m (Z0508)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_25
+
+# 25m Z0508 ----
+individuals_si_25 <- individuals_si%>%
+  filter(station =="Z0508")%>%
+  select(-station)
+
+status_biomass_25 <- species_status_biomass%>%
+  filter(Status=="Z0508")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_25<-data.frame(group=individuals_si_25[,"Species_code"], individuals_si_25)
+mean_si_species_25<-meanSI_group(individuals_si_25)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_25[,"sd_d13C"]/mean_si_species_25[,"d13C"], CV_d15N=mean_si_species_25[,"sd_d15N"]/mean_si_species_25[,"d15N"] )
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_25)==status_biomass_25[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_25 <-data.frame(mean_si_species_25[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_25[,"rel_biomass"], Status=status_biomass_25[,"Status"], latin_name=status_biomass_25[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_25<-scaleSI_range01(data_fish_25)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_25<-IDiversity(cons=data_fish_scl_25, weight=data_fish_scl_25[,c("rel_biomass")], nm_plot="25m_Z0508")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_25,3)) 
+#knitr::kable(result)
+```
+
+
+![Z0508_25m_d13C_d15N](25m_Z0508_d13C_d15N.jpeg){width="550"}
+
+### 370m (Z0492)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_370
+
+# 370m (Z0492) ----
+individuals_si_370 <- individuals_si%>%
+  filter(station=="Z0492")%>%
+  select(-station)
+
+status_biomass_370 <- species_status_biomass%>%
+  filter(Status=="Z0492")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_370<-data.frame(group=individuals_si_370[,"Species_code"], individuals_si_370)
+mean_si_species_370<-meanSI_group(individuals_si_370)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_370[,"sd_d13C"]/mean_si_species_370[,"d13C"], CV_d15N=mean_si_species_370[,"sd_d15N"]/mean_si_species_370[,"d15N"] )
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_370)==status_biomass_370[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_370 <-data.frame(mean_si_species_370[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_370[,"rel_biomass"], Status=status_biomass_370[,"Status"], latin_name=status_biomass_370[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_370<-scaleSI_range01(data_fish_370)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_370<-IDiversity(cons=data_fish_scl_370, weight=data_fish_scl_370[,c("rel_biomass")], nm_plot="370m_Z0492")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_370,3)) 
+#knitr::kable(result)
+
+```
+![370m](370m_Z0492_d13C_d15N.jpeg){width="550"}
+
+### 555m (Z0512)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_555
+
+# 555m (Z0512) ----
+individuals_si_555 <- individuals_si%>%
+  filter(station=="Z0512")%>%
+  select(-station)
+
+status_biomass_555 <- species_status_biomass%>%
+  filter(Status=="Z0512")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_555<-data.frame(group=individuals_si_555[,"Species_code"], individuals_si_555)
+mean_si_species_555<-meanSI_group(individuals_si_555)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_555[,"sd_d13C"]/mean_si_species_555[,"d13C"], CV_d15N=mean_si_species_555[,"sd_d15N"]/mean_si_species_555[,"d15N"] )
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_555)==status_biomass_555[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_555 <-data.frame(mean_si_species_555[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_555[,"rel_biomass"], Status=status_biomass_555[,"Status"], latin_name=status_biomass_555[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_555<-scaleSI_range01(data_fish_555)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_555<-IDiversity(cons=data_fish_scl_555, weight=data_fish_scl_555[,c("rel_biomass")], nm_plot="555m_Z0512")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_555,3)) 
+#knitr::kable(result)
+```
+
+![555m](555m_Z0512_d13C_d15N.jpeg){width="550"}
+
+### 715m (Z0503)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_715
+
+#715m Z0503 ----
+individuals_si_715 <- individuals_si%>%
+  filter(station=="Z0503")%>%
+  select(-station)
+
+status_biomass_715<- species_status_biomass%>%
+  filter(Status=="Z0503")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_715<-data.frame(group=individuals_si_715[,"Species_code"], individuals_si_715)
+mean_si_species_715<-meanSI_group(individuals_si_715)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_715[,"sd_d13C"]/mean_si_species_715[,"d13C"], CV_d15N=mean_si_species_715[,"sd_d15N"]/mean_si_species_715[,"d15N"] )
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_715)==status_biomass_715[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_715 <-data.frame(mean_si_species_715[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_715[,"rel_biomass"], Status=status_biomass_715[,"Status"], latin_name=status_biomass_715[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_715<-scaleSI_range01(data_fish_715)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_715<-IDiversity(cons=data_fish_scl_715, weight=data_fish_scl_715[,c("rel_biomass")], nm_plot="715m_Z0503")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_715,3)) 
+#knitr::kable(result)
+```
+![715m](715m_Z0503_d13C_d15N.jpeg){width="550"}
+
+### 1000m (Z0518)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_1000
+
+#1000m Z0518 ----
+individuals_si_1000 <- individuals_si%>%
+  filter(station=="Z0518")%>%
+  select(-station)
+
+status_biomass_1000<- species_status_biomass%>%
+  filter(Status=="Z0518")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_1000<-data.frame(group=individuals_si_1000[,"Species_code"], individuals_si_1000)
+mean_si_species_1000<-meanSI_group(individuals_si_1000)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_1000[,"sd_d13C"]/mean_si_species_1000[,"d13C"], CV_d15N=mean_si_species_1000[,"sd_d15N"]/mean_si_species_1000[,"d15N"])
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_1000)==status_biomass_1000[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_1000 <-data.frame(mean_si_species_1000[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_1000[,"rel_biomass"], Status=status_biomass_1000[,"Status"], latin_name=status_biomass_1000[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_1000<-scaleSI_range01(data_fish_1000)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_1000<-IDiversity(cons=data_fish_scl_1000, weight=data_fish_scl_1000[,c("rel_biomass")], nm_plot="1000m_Z0518")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_1000,3)) 
+#knitr::kable(result)
+```
+![1000m](1000m_Z0518_d13C_d15N.jpeg){width="550"}
+
+### 1335m (Z0497)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_1335
+
+#1335 Z0497 ----
+individuals_si_1335 <- individuals_si%>%
+  filter(station=="Z0497")%>%
+  select(-station)
+
+status_biomass_1335 <- species_status_biomass%>%
+  filter(Status=="Z0497")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_1335<-data.frame(group=individuals_si_1335[,"Species_code"], individuals_si_1335)
+mean_si_species_1335<-meanSI_group(individuals_si_1335)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_1335[,"sd_d13C"]/mean_si_species_1335[,"d13C"], CV_d15N=mean_si_species_1335[,"sd_d15N"]/mean_si_species_1335[,"d15N"] )
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_1335)==status_biomass_1335[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_1335 <-data.frame(mean_si_species_1335[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_1335[,"rel_biomass"], Status=status_biomass_1335[,"Status"], latin_name=status_biomass_1335[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_1335<-scaleSI_range01(data_fish_1335)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_1335<-IDiversity(cons=data_fish_scl_1335, weight=data_fish_scl_1335[,c("rel_biomass")], nm_plot="1335m_Z0497")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_1335,3)) 
+#knitr::kable(result)
+```
+![bathypelagic](1335m_Z0497_d13C_d15N.jpeg){width="550"}
+
+### near_bottom (Z0524)
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: indices_near_bottom
+
+# 1010 Z0524 ----
+individuals_si_nb <- individuals_si%>%
+  filter(station=="Z0524")%>%
+  select(-station)
+
+status_biomass_nb <- species_status_biomass%>%
+  filter(Status=="Z0524")
+
+# computing mean Stable Isotope values for each species
+# "group" column identical to species_code to fit with input format of function meanSI_group
+# no "weight" input as number of indivuals sampled per species did not mirror actual species biomass
+individuals_si_nb<-data.frame(group=individuals_si_nb[,"Species_code"], individuals_si_nb)
+mean_si_species_nb<-meanSI_group(individuals_si_nb)
+
+# computing coefficent of variation within each species to assess intraspecific variability
+cbind(CV_d13C=mean_si_species_nb[,"sd_d13C"]/mean_si_species_nb[,"d13C"], CV_d15N=mean_si_species_nb[,"sd_d15N"]/mean_si_species_nb[,"d15N"] )
+# -> intraspecific variability is overall low (<20%)
+
+# checking that species codes are the same in the two tables
+#row.names(mean_si_species_nb)==status_biomass_nb[,"Species_code"] # OK
+
+# building a single dataframe with all data for computing isotopic diversity indices
+data_fish_nb <-data.frame(mean_si_species_nb[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_nb[,"rel_biomass"], Status=status_biomass_nb[,"Status"], latin_name=status_biomass_nb[,"Species_name"])
+
+# scaling mean stable isotopes values using function "scale_rge01"
+data_fish_scl_nb<-scaleSI_range01(data_fish_nb)
+
+# computing isotopic diversity of the whole fish assemblage using scaled isotopic values and species relative biomass
+ID_scl_ab_nb<-IDiversity(cons=data_fish_scl_nb, weight=data_fish_scl_nb[,c("rel_biomass")], nm_plot="near_bottom_Z0524")
+
+# printing results
+result <- as.data.frame(round(ID_scl_ab_nb,3)) 
+#knitr::kable(result)
+```
+![bathypelagic](near_bottom_Z0524_d13C_d15N.jpeg){width="550"}
+
+## Spider web
+```{r}
+#| echo: true
+#| code-fold: true
+#| label: trophic_indices_df
+#| fig-width: 10
+#| fig-height: 9
+
+# load library
+library(tidyr)
+
+# crate a data frame with all index value
+trophic_indices <- data.frame(
+  group = c("25m", "370m", "555m", "715m", "1000m", "1335m", "1010m-bottom proximity"),
+  IDiv = c(0.952, 0.918, 0.845, 0.928, 0.721, 0.932, 0.994),
+  IDis = c(0.898, 0.620, 0.466, 0.621, 0.451, 0.755, 0.318),
+  IEve= c(0.46, 0.713, 0.789, 0.644, 0.58, 0.633, 0.543), 
+  IUni =c(0.566,0.884, 0.833, 0.599, 0.73, 0.713, 0.758))%>%
+  mutate(across(group, factor, levels=c("25m", "370m", "555m", "715m", "1000m", "1335m", "1010m-bottom proximity")))
+
+# plot 
+ggradar::ggradar(trophic_indices,
+                 values.radar = c("0", "0.5", "1"),
+                 group.colours ="#004291", group.line.width = 1,
+                 axis.label.size= 4, group.point.size = 3,
+                 grid.label.size = 4)+
+  facet_wrap(~group)+
+  theme_minimal()+
+  theme(strip.text.x = element_text(size=12, face = "bold"),
+        plot.background = element_rect(colour = "white"))+
+  guides(col="none")
+
+#ggsave("spider_web.png", path = "figures", dpi = 700)
+
+# spider web for each station 
+# for (i in 1:7) {
+#  print(ggradar::ggradar(trophic_indices[i,],
+#                  values.radar = c("0", "0.5", "1"),
+#                  group.colours ="#0c3d97",  group.line.width = 1.3,
+#                  axis.label.size= 4, group.point.size = 5,
+#                  grid.label.size = 4)+
+#   facet_wrap(~group)+
+#   theme_light()+
+#   theme(strip.text.x = element_text(size=12, face = "bold"))+
+#   guides(col="none"))
+# }
+```
+```{r}
+#| echo: true
+#| label: trophic_indices_table
+
+htmltools::tagList(DT::datatable(trophic_indices))
+```
+
+
+# 5.additional analyses 
+## Isotopic niches by sations 
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 8
+#| label: ncihes_stations 
+
+# colors selection 
+nichecol <- c("#E4A33A", "#F67451", "#D664BE", "#3DA5D9", "#94b3ae",
+              "#18206F", "#FD151B", "#049A8F", "#072AC8", "purple", 
+              "#d193f7", "#d8c2ab", "#678FCB", "#A63A49", "#00547A", "#6B54A0")
+
+# plot
+ggplot(data = isotope_data_fish, 
+                         aes(x = d13c, 
+                             y = d15n)) + 
+  facet_wrap(~factor(trawling_depth))+
+  geom_point(aes(color = species), alpha=0.7, size=1) +
+  scale_color_manual(values=nichecol)+  
+  scale_fill_manual(values=nichecol)+
+  scale_x_continuous(expression({delta}^13*C~'\u2030')) +
+  scale_y_continuous(expression({delta}^15*N~'\u2030'))+
+  stat_ellipse(aes(group = species, fill = species, color = species), 
+               alpha = 0.2, level = p.ell,linewidth = 0.7, type = "norm", geom = "polygon")+
+  theme_light()+
+  theme(legend.text = element_text(size=10),
+        legend.title = element_text(size=10),
+        axis.title = element_text(size=10),
+        axis.text = element_text(size=10))+
+  labs(shape="Taxon", col= "Species", fill="Species")
+
+#ggsave("niches_stations.png", path = "figures", dpi = 700, height = 8, width = 10)
+```
+
+
+## Krill data 
+- Total $\delta$<sup>15</sup>N variability  = 0.76‰
+- Total $\delta$<sup>13</sup>C variability = 1.1‰
+
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: krill_data
+
+# Load data
+isotope_data <-  utils::read.csv(here::here("data", "isotopic_data_2021.csv"), sep = ";", header = T,dec = ",")
+isotope_data_krill <- isotope_data %>% filter (species == "Meganyctiphanes_norvegica")
+
+first_plot <- ggplot(data = isotope_data_krill, aes(x = d13c, y = d15n)) + 
+  geom_point(aes(color= factor(trawling_depth)), size = 3) +
+  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
+  xlab(expression(paste(delta^{13}, "C (\u2030)"))) + 
+  theme(text = element_text(size=16)) + 
+  theme_light()+
+  paletteer::scale_color_paletteer_d("rcartocolor::Teal")
+
+# Summarise By depth 
+data_krill_sum <- isotope_data_krill %>% 
+  group_by(trawling_depth) %>% 
+  summarise(count = n(),
+            mC = mean(d13c), 
+            sdC = sd(d13c), 
+            mN = mean(d15n), 
+            sdN = sd(d15n))
+
+second_plot <- first_plot +
+  geom_errorbar(data = data_krill_sum,
+                mapping = aes(x = mC, y = mN, ymin = mN - 1.96*sdN, ymax = mN + 1.96*sdN, col = factor(trawling_depth)), 
+                width = 0, size=0.8) +
+  geom_errorbarh(data = data_krill_sum, 
+                 mapping = aes(x = mC, y = mN,xmin = mC - 1.96*sdC, xmax = mC + 1.96*sdC, col = factor(trawling_depth)),
+                 height = 0, size=0.8) + 
+  geom_point(data = data_krill_sum, 
+             aes(x = mC, y = mN, fill = factor(trawling_depth),col = factor(trawling_depth), shape = factor(trawling_depth)),
+             size = 5) +
+  scale_shape_manual(values = c(21, 22, 23, 24, 25, 8, 7))+
+  paletteer::scale_fill_paletteer_d("rcartocolor::Teal")+
+  paletteer::scale_color_paletteer_d("rcartocolor::Teal")+
+  labs(shape="Trawling depth (m)", col="Trawling depth (m)", fill= "Trawling depth (m)" )
+
+print(second_plot)
+
+```
+
+### Isotope variability
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: krill_boxplot
+#| fig-width: 12
+
+boxplot_d13c <- ggpubr::ggboxplot(isotope_data_krill , x = "trawling_depth", y = "d13c", 
+          color = "trawling_depth",fill = "trawling_depth", alpha=0.3,
+          ylab = "d13c", xlab = "trawling_depth")+
+  ylab(expression(paste(delta^{13}, "C (\u2030)"))) +
+  xlab("Trawling depth (m)")+
+  paletteer::scale_fill_paletteer_d("rcartocolor::Teal")+
+  paletteer::scale_color_paletteer_d("rcartocolor::Teal")+
+  guides(fill="none", col="none" ,alpha="none")+
+  theme_light()
+
+boxplot_d15n <- ggpubr::ggboxplot(isotope_data_krill , x = "trawling_depth", y = "d15n", 
+                  color = "trawling_depth", fill = "trawling_depth",
+                  alpha=0.3) +
+  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
+  xlab("Trawling depth (m)")+
+  paletteer::scale_fill_paletteer_d("rcartocolor::Teal")+
+  paletteer::scale_color_paletteer_d("rcartocolor::Teal")+
+  guides(fill="none", col="none" ,alpha="none")+
+  theme_light()
+
+ggpubr::ggarrange(boxplot_d13c, boxplot_d15n)
+
+```
+
+### Tests 
+```{r}
+#| echo: true
+#| warning: false
+#| code-fold: true
+#| label: test_krill_data
+pairwise.wilcox.test(isotope_data_krill$d13c, isotope_data_krill$trawling_depth,
+                 p.adjust.method = "BH")
+
+pairwise.wilcox.test(isotope_data_krill$d15n, isotope_data_krill$trawling_depth,
+                 p.adjust.method = "BH")
+
+```
