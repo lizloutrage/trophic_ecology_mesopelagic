@@ -1,4 +1,3 @@
-# README
+# niche_area_sp: calculates niche size values for each species observed within an assemblage and compares them with the size of a niche derived from a stochastic model (random null model)
 
-This folder contains all your analyses of the project.
-It contains only R scripts (R functions must be stored in the R/ folder).
+# overlap_std: calculates both the observed sum of all species overlaps within an assemblage and compares it with the sum of overlaps derived from a stochastic model (random null model)
