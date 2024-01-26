@@ -11,7 +11,9 @@ isotope_data <-
     sep = ";",
     header = T,
     dec = ","
-  )
+  )%>%
+  # remove outlier values 
+  filter(individual_code!="Arg-olf 42")
 
 # prepare data
 isotope_data_fish <- isotope_data %>%
@@ -148,20 +150,13 @@ observed_df$habitat <- factor(
 ggplot(bootstrapped_df, aes(x = value)) +
   facet_wrap( ~ habitat) +
   theme_light() +
-  geom_density(
-    aes(y = ..count..),
-    fill = "darkgrey",
-    alpha = 0.6,
-    color = NA
-  ) +
-  geom_vline(
-    data = observed_df,
-    aes(xintercept = value),
-    color = "#045171",
-    linetype = "longdash",
-    size = 0.4
-  ) +
-  labs(x = "Sum overlap") +
-  theme(strip.text.x = element_text(size = 10, face = "bold"))
+  geom_density(aes(y = ..count..), fill = "darkgrey", alpha = 0.7, color = NA) +
+  geom_vline(data = observed_df, aes(xintercept = value), color = "#045171",
+    linetype = "longdash", size = 0.8, alpha=0.8) +
+  labs(x = "Sum of isotopic niche overlaps", y="Frequency")+
+  theme(strip.text.x = element_text(size = 12, face = "bold", color = "gray50"),
+        strip.background=element_rect(fill="white"),
+        axis.title = element_text(size=12),
+        axis.text = element_text(size=12))
 
-#ggsave("over_depth_layer.png", path = "figures", dpi = 700)
+#ggsave("over_depth_layer.png", path = "figures", dpi = 700, height = 6, width = 9)

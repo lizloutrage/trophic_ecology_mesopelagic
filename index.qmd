@@ -1,7 +1,6 @@
 ---
 title: "index"
 author: "Liz Loutrage"
-date: 09/29/2023
 format:
   html:
     code-fold: true
@@ -19,7 +18,6 @@ page-layout: full
 ---
 
 # 1. Data
-
 ```{r}
 #| echo: true
 #| warning: false
@@ -30,140 +28,93 @@ page-layout: full
 library(dplyr)
 library(ggplot2)
 
-# load data 
-## Isotope data 
-isotope_data <-  utils::read.csv(here::here("data", "isotopic_data_2021.csv"), sep = ";", header = T,dec = ",")
+# load data
+## Isotope data
+isotope_data <-
+  utils::read.csv(
+    here::here("data", "isotopic_data_2021.csv"),
+    sep = ";",
+    header = T,
+    dec = ","
+  ) %>%
+  # remove outlier values
+  filter(individual_code != "Arg-olf 42")
 
 isotope_data_fish <- isotope_data %>%
-  # only fish 
-  filter(taxon == "Fish")%>%
-  mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))%>%
+  # only fish
+  filter(taxon == "Fish") %>%
   arrange(species)
 
-## trawling data 
-trawling_data_evhoe21 <-  utils::read.csv(here::here("data", "trawling_data_evhoe_2021.csv"), sep = ";", header = T, dec = ".")
+## trawling data
+trawling_data_evhoe21 <-
+  utils::read.csv(
+    here::here("data", "trawling_data_evhoe_2021.csv"),
+    sep = ";",
+    header = T,
+    dec = "."
+  )
 
-# density distribution from biomass value 
-density_distribution <- trawling_data_evhoe21%>%
-  select(Nom_Scientifique, Tot_V_HV, Code_Station)%>%
-  #selection of mesopelagic trawling 
-  filter(Code_Station%in% c("Z0524", "Z0518", "Z0512", "Z0508", 
-                            "Z0503", "Z0497", "Z0492"))%>%
-  #selection of species sampled for isotope 
-  filter(Nom_Scientifique%in%c("Arctozenus risso", "Argyropelecus olfersii", "Benthosema glaciale",
-                               "Cyclothone", "Lampanyctus crocodilus", "Lampanyctus macdonaldi",
-                               "Lestidiops sphyrenoides", "Maulisia argipalla", "Maurolicus muelleri",
-                               "Melanostigma atlanticum", "Myctophum punctatum", "Notoscopelus bolini",
-                               "Notoscopelus kroyeri", "Searsia koefoedi", "Serrivomer beanii",
-                               "Xenodermichthys copei"))%>%
-  mutate(Nom_Scientifique=recode(Nom_Scientifique, "Cyclothone"="Cyclothone spp."))%>%
-  mutate(trawling_depth= case_when(Code_Station %in% c("Z0508") ~25,
-                                   Code_Station %in% c("Z0492") ~370,
-                                   Code_Station%in% c("Z0512") ~555,
-                                   Code_Station %in% c("Z0503") ~715,
-                                   Code_Station %in% c("Z0518") ~1000,
-                                   Code_Station %in% c("Z0524") ~1010,
-                                   Code_Station %in% c("Z0497") ~1335))%>%
-  distinct()%>%
-  group_by(Nom_Scientifique)%>%
-  mutate(sum_sp=sum(Tot_V_HV))%>%
-  ungroup()%>%
-  group_by(trawling_depth, Nom_Scientifique)%>%
-  mutate(pourcentage_bio=sum(Tot_V_HV/sum_sp*100))%>%
-  # Selection of trawling depth 
-  select(Nom_Scientifique, trawling_depth, pourcentage_bio)%>%
-  # to have a round number to be able to multiply it afterwards 
+# density distribution from biomass value
+density_distribution <- trawling_data_evhoe21 %>%
+  select(Nom_Scientifique, Tot_V_HV, Code_Station) %>%
+  #selection of pelagic trawling
+  filter(Code_Station %in% c("Z0524", "Z0518", "Z0512", "Z0508",
+                             "Z0503", "Z0497", "Z0492")) %>%
+  #selection of species sampled for isotope
+  filter(
+    Nom_Scientifique %in% c(
+      "Arctozenus risso",
+      "Argyropelecus olfersii",
+      "Benthosema glaciale",
+      "Cyclothone",
+      "Lampanyctus crocodilus",
+      "Lampanyctus macdonaldi",
+      "Lestidiops sphyrenoides",
+      "Maulisia argipalla",
+      "Maurolicus muelleri",
+      "Melanostigma atlanticum",
+      "Myctophum punctatum",
+      "Notoscopelus bolini",
+      "Notoscopelus kroyeri",
+      "Searsia koefoedi",
+      "Serrivomer beanii",
+      "Xenodermichthys copei"
+    )
+  ) %>%
+  mutate(Nom_Scientifique = recode(Nom_Scientifique, "Cyclothone" = "Cyclothone spp.")) %>%
+  mutate(
+    trawling_depth = case_when(
+      Code_Station %in% c("Z0508") ~ 25,
+      Code_Station %in% c("Z0492") ~ 370,
+      Code_Station %in% c("Z0512") ~ 555,
+      Code_Station %in% c("Z0503") ~ 715,
+      Code_Station %in% c("Z0518") ~ 1000,
+      Code_Station %in% c("Z0524") ~ 1010,
+      Code_Station %in% c("Z0497") ~ 1335
+    )
+  ) %>%
+  distinct() %>%
+  group_by(Nom_Scientifique) %>%
+  mutate(sum_sp = sum(Tot_V_HV)) %>%
+  ungroup() %>%
+  group_by(trawling_depth, Nom_Scientifique) %>%
+  mutate(pourcentage_bio = sum(Tot_V_HV / sum_sp * 100)) %>%
+  # Selection of trawling depth
+  select(Nom_Scientifique, trawling_depth, pourcentage_bio) %>%
+  # to have a round number to be able to multiply it afterwards
   mutate(across(pourcentage_bio, round, 0)) %>%
-  mutate(n_bio = as.integer(pourcentage_bio))%>%
-  select(-c(pourcentage_bio))%>%
+  mutate(n_bio = as.integer(pourcentage_bio)) %>%
+  select(-c(pourcentage_bio)) %>%
   tidyr::uncount(n_bio)
 ```
 
-# 2. Model deterministic or stochastic ?
-
-**Objectif:** déterminer si les espèces cooccurrentes au sein d'une couche de profondeur présentent des niches trophiques compatibles avec un modèle déterministe d'aménagement de niche ou un modèle stochastique (dû au hasard).
-
-**Hypothèses:**
-
-- Si modèle déterministe: la composition et la proportion des espèces observées dans un assemblage n'est pas dû au hasard, la concurrence pour les ressources pousse les espèces à devenir moins semblables dans leur utilisation des ressources, ce qui réduira la taille de leur niche et favorisera donc leur coexistence en limitant leurs similitudes
-
--   Si modèle stochastique: composition et l'abondance des espèces d'un assemblage est dû au hasard, la coexistence se produit par le biais de l'équivalence écologique (les espèces possèdent des caractéristiques écologiques similaires et n'ont pas d'avantage concurentiel les unes sur les autres)
-
-__→ Pour cela :__  
-
-- modèle null (stochastique) = distribution attendue lorsque les modèles résultent de processus stochastiques (en rééchantillonnant les données isotopiques), donc un assemblage organisé par des processus stochastiques devrait présenter des niches trophiques avec des positions similaires dans l'espace isotopique, une grande taille de niche et des niveaux élevés de chevauchement entre les espèces.
-
-- Si différence avec le modèle null = assemblage oragnisé par des intéractions déterministes entre espèces de compétition et de prédation. Donc position des niches différenciée entre les espèces, taille des niches relativement petite par rapport à tout l'espace isotopique occupé de l'assemblage, et chevauchement relativement faible entre les espèces.
-
-Calcul de différents indices: 
-
-- Taille ellipse à 40%  
-- Mesures des chevauchements interspécifiques  
-
-## Taille des niches   
-
-- ellipses à 40%  
-
-![niches_area_model](figures/niches_area_model.png)
-
-__conclusion :__ modèle déterministe (niches observées plus petites que si distribution des espèces au hasard) pour la plupart des couches de profondeur, sauf couche épipélagique (et station près du fond). Ressources non limitantes dans la couche épipélagique (et près du fond) donc les espèces ne sont pas forcées de se ségréger ? 
-
-## Chevauchements 
-
-- Calcul de la matrix de chevauchement entre les espèces (ellipses à 40%), puis somme de tous les chauvauchements. 
-
-![over_depth_layer](figures/over_depth_layer.png)
-__conclusion:__ 
-- les chevauchements observés sont significativement différents que si modèle de distribution au hasard, modèle déterministe. (mais toutes les espèces présentes dans un assemblage non échantillonées, pb?)
-- Lower-mesopelagic: nombre d'espèces échantillonnées le plus important (n=9) et valeur observée la plus petite par rapport à la distribution des valeurs permutées: pour le nombre d'espèces présentes peu d'overlap? (et inversement pour bottom proximity?)
-
-## Indices de diversité isotpiques 
-
-- sans prise en compte de la biomasse 
-
-![indices_comparaisons2](figures/indices_comparaisons2.png)
-__conclusion:__ modèle stochastique. Sans pondération de la biomasse toutes les espèces ont le même poids dans l'analyse. 
-
-__A garder dans le papier?  :__
-
-- Taille des ellipses 
-- chevauchements 
-- range range carbone et azote
-
-Comme modèle déterministe, quelles sont les forces évolutives/les axes de ségragtion qui rentrent en jeu pour expliquer cette structure? 
-
-- Calcul des indices de disversité isotopiques pondéré par la biomasse ? La structure de la communauté peut être aussi expliquée par la répartition de la biomassse des espèces au sein de l'espace isotopique ? 
-- Autre axe de ségrégation le long du gradient de niveau trophique 
-- Le long du gradient de profondeur (analyse cluster guildes trophiques avec mise en lien de la distribution en profondeur des espèces)
-
-```{r}
-#| echo: true
-#| warning: false
-#| label: summary_data_sp
-#| code-fold: true
-
-isotope_data_sum <- isotope_data%>%
-  group_by(species)%>%
-  mutate(mean_d13c=mean(d13c),
-         sd_d13c=sd(d13c),
-         mean_d15n=mean(d15n),
-         sd_d15n=sd(d15n),
-         n=n())%>%
-  select(species, mean_d13c, sd_d13c, mean_d15n, sd_d15n, n, number_ind_pool, family)%>%
-  distinct()%>%
-  mutate(across(where(is.numeric), round, 2))
-
-htmltools::tagList(DT::datatable(isotope_data_sum))
-```
-
-# 3. Isotopic niches
+# 2. Isotopic niches
 
 ## Ellipses
 
 -   ellipses at 40%
 -   Δ $\delta$<sup>13</sup>C = 2.36‰
 -   Δ $\delta$<sup>15</sup>N = 5.94‰
-
 ```{r}
 #| echo: true
 #| warning: false
@@ -174,146 +125,69 @@ htmltools::tagList(DT::datatable(isotope_data_sum))
 
 niche_plot_community <- isotope_data%>%
   mutate(species= gsub("_"," ", species))%>%
-    mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))
+  mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))
 
-# colors selection 
-nichecol_krill <- c("#E4A33A", "#F67451", "#D664BE", "#3DA5D9", "#94b3ae",
-                    "#18206F", "#FD151B", "#049A8F", "#072AC8", "black", "purple", 
-                    "#d193f7", "#d8c2ab", "#678FCB", "#A63A49", "#00547A", "#6B54A0")
+# order by taxonomy 
+niche_plot_community$species <- factor(niche_plot_community$species, 
+                                       levels = c("Serrivomer beanii",
+                                                  "Xenodermichthys copei",
+                                                  "Maulisia argipalla",
+                                                  "Searsia koefoedi",
+                                                  "Cyclothone spp.",
+                                                  "Argyropelecus olfersii",
+                                                  "Maurolicus muelleri",
+                                                  "Lestidiops sphyrenoides",
+                                                  "Arctozenus risso",
+                                                  "Benthosema glaciale",
+                                                  "Lampanyctus crocodilus",
+                                                  "Lampanyctus macdonaldi",
+                                                  "Myctophum punctatum",
+                                                  "Notoscopelus bolini",
+                                                  "Notoscopelus kroyeri",
+                                                  "Melanostigma atlanticum",
+                                                  "Meganyctiphanes norvegica"))
 
-# size of the ellipse 
-p.ell<-0.40
- 
+colors_sp <- c(
+  "#6B3777",
+  "#00218F",
+  "#1E78FF",
+  "#78C8F4",
+  "#8E050B",
+  "#FF5064",
+  "#FF87A6",
+  "#E5D61D",
+  "#C5AA1A",
+  "#8FDCB6",
+  "#00564E",
+  "#54C797",
+  "#5F7F57",
+  "#6CA086",
+  "#344B47",
+  "#9256DD",
+  "black"
+)
+
 # plot
 ggplot(data = niche_plot_community, 
-                         aes(x = d13c, 
-                             y = d15n)) + 
-  geom_point(aes(color = species, shape= taxon), size = 2) +
-  scale_color_manual(values=nichecol_krill)+  
-  scale_fill_manual(values=nichecol_krill)+
+       aes(x = d13c, 
+           y = d15n)) + 
+  geom_point(aes(color = species, shape= taxon), size =1) +
+  scale_color_manual(values = colors_sp)+
+  scale_fill_manual(values = colors_sp)+
   scale_shape_manual(values= c(19, 3))+
-  scale_x_continuous(expression({delta}^13*C~'\u2030'), limits = c(-21, -18.5)) +
-  scale_y_continuous(expression({delta}^15*N~'\u2030'), limits = c(7, 14))+
+  scale_x_continuous(expression({delta}^13*C~'\u2030')) +
+  scale_y_continuous(expression({delta}^15*N~'\u2030'))+
   stat_ellipse(aes(group = species, fill = species, color = species), 
-               alpha = 0.2, level = p.ell,linewidth = 0.7, type = "norm", geom = "polygon")+
-  theme_light()+
-  theme(legend.text = element_text(size=15),
-        legend.title = element_text(size=15),
+               alpha = 0.12, level = 0.40,linewidth = 0.5, type = "norm", geom = "polygon")+
+  theme_bw()+
+  theme(legend.text = element_text(size=13),
+        legend.title = element_text(size=13),
         axis.title = element_text(size=15),
         axis.text = element_text(size=15))+
-  labs(shape="Taxon", col= "Species", fill="Species")
+  labs(shape="Taxon", col= "Species", fill="Species")+
+  theme(aspect.ratio = 1)
+ggsave("niches_community_col.png", path = "figures", dpi = 700, height = 10, width = 12)
 
-#ggsave("niches_community.png", path = "figures", dpi = 700, height = 10, width = 12)
-```
-
-## Niche areas
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| message: false
-#| warning: false
-#| label: niche_area_community
-#| fig-align: center
-#| fig-width: 12
-#| fig-height: 8
-
-# Model initialization ----
-# options for running jags
-parms <- list()
-parms$n.iter <- 2 * 10^4   # number of iterations to run the model for
-parms$n.burnin <- 1 * 10^3 # discard the first set of values
-parms$n.thin <- 10     # thin the posterior by this many
-parms$n.chains <- 2        # run this many chains
-parms$save.output = FALSE
-parms$save.dir = tempdir()
-
-# define the priors
-priors <- list()
-priors$R <- 1 * diag(2)
-priors$k <- 2
-priors$tau.mu <- 1.0E-3
-
-# Niche area ----
-community_siber <- isotope_data%>%
-  select(-group)%>%
-  mutate(group = species, 
-         # All species in the same community (no segregation by depth)
-         community = "",
-         iso1=d13c,
-         iso2 =d15n,
-         .keep = "unused")%>%
-  select(group, community, iso1, iso2)%>%
-  relocate(iso1, .before = group)%>%
-  relocate(iso2, .after = iso1)%>%
-  # Reorder species by SEA
-  mutate(group_order = forcats::fct_relevel(group, c("Searsia_koefoedi", "Lampanyctus_crocodilus",
-                                              "Myctophum_punctatum", "Benthosema_glaciale",
-                                              "Xenodermichthys_copei", "Lampanyctus_macdonaldi",
-                                              "Serrivomer_beanii", "Cyclothone spp.", "Argyropelecus_olfersii",
-                                              "Melanostigma_atlanticum", "Arctozenus_risso", "Maulisia_argipalla",
-                                              "Notoscopelus_kroyeri", "Lestidiops_sphyrenoides",
-                                              "Notoscopelus_bolini", "Maurolicus_muelleri", "Meganyctiphanes_norvegica"))) %>%
-  arrange(group_order)%>%
-  select(-group)%>%
-  rename("group"="group_order")%>%
-  relocate(community, .after = group)
-
-# create the siber object
-community_siber_obj <- SIBER::createSiberObject(community_siber)
-
-# Calculate summary statistics for each group: TA, SEA and SEAc
-group_ML <- SIBER::groupMetricsML(community_siber_obj)
-
-# fit the ellipses which uses an Inverse Wishart prior
-# on the covariance matrix Sigma, and a vague normal prior on the 
-# means. Fitting is via the JAGS method.
-ellipses_posterior_community <- SIBER::siberMVN(community_siber_obj, parms, priors)
-SEA_B_community <- SIBER::siberEllipses(ellipses_posterior_community)
-
-# colors 
-clrs_com <- matrix(c( "#e4c3c8", "#c98891", "#A63A49",
-                      "#dee8e6", "#bed1ce", "#94b3ae", 
-                      "#F5E9FD", "#E7C9FB", "#d193f7",
-                      "#f2d0eb", "#e6a2d8", "#D664BE",
-                      "#d2cbe2", "#a698c6", "#6B54A0",
-                      "#b9bcd3", "#5d629a", "#18206F",
-                      "#b2cbd7", "#6698af", "#00547A",
-                      "#c4e4f3", "#8ac9e8", "#3DA5D9",
-                      "#fcd5ca", "#f9ab96", "#F67451",
-                      "#ECD7F9", "#D09CF1", "purple",
-                      "#F9ECD7", "#F1D09C", "#E4A33A",
-                      "#cceae8", "#68c2bb", "#049A8F",
-                      "#c2d2ea", "#a3bbdf", "#678FCB",
-                      "#fed0d1", "#fe8a8d", "#FD151B",
-                      "#f3ece5", "#e7dacc", "#d8c2ab",
-                      "#CDD4F4", "#8394E3", "#072AC8"), nrow = 3, ncol = 16)
-
-# save plot in high quality 
-#tiff("SEA.tiff", units="in", width=10, height=7, res=700)
-
-# plot
-SIBER::siberDensityPlot(SEA_B_community, xticklabels = colnames(group_ML),
-                        ylab = expression("Standard Ellipse Area" ('\u2030' ^2) ),
-                        bty = "L",
-                        las = 1,
-                        xlab = "",
-                        #clr = clrs_com,
-                        ylims = c(0,1.5))
-
-# Add x's for the ML estimated SEA-c
-points(1:ncol(SEA_B_community), group_ML[3,], col="red", pch = "x", lwd = 2)
-
-#dev.off()
-
-cr.p <- c(0.95, 0.99) # vector of quantiles
-
-# do similar to get the modes, taking care to pick up multimodal posterior
-# distributions if present
-SEA_B_community_modes <- lapply(
-  as.data.frame(SEA_B_community), 
-  function(x,...){tmp<-hdrcde::hdr(x)$mode},
-  prob = cr.p, all.modes=T)
 
 ```
 
@@ -349,7 +223,7 @@ elp.area_community <- rKIN::getArea(test.elp_community)
 
 # determine polygon overlap for all polygons
 elp.olp_community <- rKIN::calcOverlap(test.elp_community)%>%
-  #renames rownames
+  #renames row names
   mutate(OverlapID= gsub("_"," ", OverlapID))%>%
   mutate(OverlapID= gsub("40","", OverlapID))%>%
   mutate(across(where(is.numeric), round, 2))%>%
@@ -364,15 +238,15 @@ colnames(elp.olp_community)<- gsub(x =colnames(elp.olp_community), pattern = "40
 ggcorrplot::ggcorrplot(elp.olp_community, lab = T, outline.color = "white", lab_size = 3, tl.cex = 10)+
   scale_fill_gradient2(limit = c(0,1), low = "white", high = "grey50", mid = "grey80", midpoint = 0.5)+
   labs(fill="Overlap value")+
-  theme(axis.text = element_text(face="italic", size = 10),
+  theme(axis.text = element_text(face="italic", size = 13),
         legend.text = element_text(size=10),
         legend.title = element_text(size=10),
         plot.background = element_rect(colour = "white"))
 
-#ggsave("matrix_overlap.png", path = "figures", dpi = 700, width = 8, height = 6)
+ggsave("matrix_overlap.png", path = "figures", dpi = 700, width = 8, height = 6)
 ```
 
-# 4. Depth segregation
+# 3. Depth segregation
 
 ## Cluster
 
@@ -388,42 +262,26 @@ ggcorrplot::ggcorrplot(elp.olp_community, lab = T, outline.color = "white", lab_
 #| label: cluster
 
 # calculate median depth by species with trawling data set 2021
-mean_depth_sp <- density_distribution%>%
-  group_by(Nom_Scientifique)%>%
-  mutate(median_depth=median(trawling_depth))%>%
-  select(Nom_Scientifique, median_depth)%>%
-  distinct()%>%
-  ungroup()%>%
-  arrange(Nom_Scientifique)%>%
-  rename(species=Nom_Scientifique)
-
-# calcul overlap ellipse 40%
-# test.elp_community <- rKIN::estEllipse(data= isotope_data_fish,  x="d13c", y="d15n", group="species", levels=40, smallSamp = TRUE)
-# elp.olp_community <- rKIN::calcOverlap(test.elp_community)
-# 
-# df <- elp.olp_community%>%
-#   tibble::column_to_rownames(var="OverlapID")%>%
-#   as.data.frame()
+mean_depth_sp <- density_distribution %>%
+  group_by(Nom_Scientifique) %>%
+  mutate(median_depth = median(trawling_depth)) %>%
+  select(Nom_Scientifique, median_depth) %>%
+  distinct() %>%
+  ungroup() %>%
+  arrange(Nom_Scientifique) %>%
+  rename(species = Nom_Scientifique)
 
 # Gap statistic
-factoextra::fviz_nbclust(elp.olp_community , kmeans, nstart = 25,  method = "gap_stat", nboot = 100, verbose = FALSE)+
+factoextra::fviz_nbclust(
+  elp.olp_community ,
+  kmeans,
+  nstart = 25,
+  method = "gap_stat",
+  nboot = 100,
+  verbose = FALSE) +
   labs(subtitle = "Gap statistic method")
 
-res.km <- kmeans(scale(elp.olp_community ),5, nstart = 25)
-
-# Réduction de dimension en utilisant l'ACP
-res.pca <- prcomp(elp.olp_community [, -5],  scale = TRUE)
-# Coordonnées des individus
-ind.coord <- as.data.frame(factoextra::get_pca_ind(res.pca)$coord)
-# Ajouter les clusters obtenus à l'aide de l'algorithme k-means
-ind.coord$cluster <- factor(res.km$cluster)
-# Percentage of variance explained by dimensions
-eigenvalue <- round(factoextra::get_eigenvalue(res.pca), 1)
-variance.percent <- eigenvalue$variance.percent
-
-# Add species names and median depth 
-ind.coord_depth <- cbind(ind.coord, mean_depth_sp)
-ind.coord_depth$median_depth <- as.factor(ind.coord_depth$median_depth)
+res.km <- kmeans(scale(elp.olp_community), 5, nstart = 25)
 
 ```
 
@@ -453,7 +311,7 @@ dend %>%
   dendextend::set("branches_k_color",
       value = c("#86BBBD", "#ECA72C", "#4D85A8", "#9BABE8", "#D35D4A"),
       k = 5) %>%
-  dendextend::set("labels_cex", 0.6) %>%
+  dendextend::set("labels_cex", 0.8) %>%
   dendextend::set("branches_lty", 2) %>%
   dendextend::set("leaves_bg") %>%
   dendextend::set("leaves_pch", 19) %>%
@@ -482,21 +340,40 @@ dend %>%
 
 # Density plot----
 # assign each species to a cluster 
-density_distribution_cluster <- density_distribution%>%
-  mutate(cluster=case_when(Nom_Scientifique%in% c("Argyropelecus olfersii", "Lampanyctus crocodilus",
-                                                  "Benthosema glaciale","Myctophum punctatum","Serrivomer beanii")~4,
-                           Nom_Scientifique%in% c("Lampanyctus macdonaldi", "Maulisia argipalla",
-                                                  "Searsia koefoedi")~5,
-                           Nom_Scientifique%in% c("Cyclothone spp.","Notoscopelus bolini", "Notoscopelus kroyeri",
-                                                  "Melanostigma atlanticum")~3,
-                           Nom_Scientifique%in% c("Xenodermichthys copei", "Maurolicus muelleri")~1,
-                           Nom_Scientifique%in% c("Arctozenus risso","Lestidiops sphyrenoides")~2))%>%
-  group_by(Nom_Scientifique)%>%
+density_distribution_cluster <- density_distribution %>%
+  mutate(
+    cluster = case_when(
+      Nom_Scientifique %in% c(
+        "Argyropelecus olfersii",
+        "Lampanyctus crocodilus",
+        "Benthosema glaciale",
+        "Myctophum punctatum",
+        "Serrivomer beanii"
+      ) ~ 4,
+      Nom_Scientifique %in% c(
+        "Lampanyctus macdonaldi",
+        "Maulisia argipalla",
+        "Searsia koefoedi"
+      ) ~ 5,
+      Nom_Scientifique %in% c(
+        "Cyclothone spp.",
+        "Notoscopelus bolini",
+        "Notoscopelus kroyeri",
+        "Melanostigma atlanticum"
+      ) ~ 3,
+      Nom_Scientifique %in% c("Xenodermichthys copei", "Maurolicus muelleri") ~
+        1,
+      Nom_Scientifique %in% c("Arctozenus risso", "Lestidiops sphyrenoides") ~
+        2
+    )
+  ) %>%
+  group_by(Nom_Scientifique) %>%
   arrange(desc(trawling_depth))
 
 # Order in function of median depth
 density_distribution_cluster$Nom_Scientifique = with(density_distribution_cluster, reorder(Nom_Scientifique, cluster, max))  
 
+# plot
 ggplot(density_distribution_cluster,
        aes(x = trawling_depth, y = Nom_Scientifique, group = Nom_Scientifique, 
            col=factor(cluster), fill=factor(cluster)))+ 
@@ -504,31 +381,21 @@ ggplot(density_distribution_cluster,
   scale_color_manual(values = c("#D35D4A", "#9BABE8", "#ECA72C", "#86BBBD","#4D85A8"))+
   ggridges::stat_density_ridges(quantile_lines = TRUE, quantiles = 0.5 , alpha=0.4, size=0.7,
                                 rel_min_height = 0.002, scale=1.2)+
-  theme_light()+
+  theme_bw()+
   scale_y_discrete(position = "left")+
   scale_x_reverse(limits = c( 1400,0))+
   coord_flip()+
   ylab(label = "")+ xlab("Depth (m)")+
-  theme(axis.text.y = element_text(size=10.5),
-        axis.text.x = element_text(face="italic", size=10.5, angle=80, vjust = 0.5, hjust=0.5),
-        axis.title.x = element_text(size=10.5),
-        axis.title.y = element_text(size=10.5))+
+  theme(axis.text.y = element_text(size=15),
+        axis.text.x = element_text(face="italic", size=13, angle=80, vjust = 0.5, hjust=0.5),
+        axis.title.x = element_text(size=15),
+        axis.title.y = element_text(size=15))+
   guides(fill="none", col="none", alpha="none")
 
-#ggsave("density_plot.png", path = "figures", dpi = 600, height = 8, width = 10)
+ggsave("density_plot.png", path = "figures", dpi = 600, height = 8, width = 10)
 ```
 
-# 5. Isotopic diversity index
-
-## Definitions
-
--   **Isotopic divergence** : tends to 1 when all points (or their weights) are located at the edge of the convex hull, i.e. when the oragnisms with the most extreme isotopic values dominate the food web
-
--   **Isotopic dispersion**: equal to 1 when most points (or their weights) are far from the center of gravity of the point group, i.e. when organisms tend to have contrasting isotopic values
-
--   **Isotopic evenness**: tends to 1 when all organisms are equally distributed in isotopic space
-
--   **Isotopic uniqueness**: tends to 1 when most organisms (or their weights) are isolated in isotopic space, i.e. when most organisms (or those with the highest abundance) are isolated in isotopic space, their isotopic values are very different from the rest of the organisms
+# 4. Isotopic diversity index
 
 ## Representativeness of sampling
 
@@ -540,32 +407,40 @@ ggplot(density_distribution_cluster,
 #| code-fold: true
 #| label: representativeness_sampling 
 
-# Species % biomass and abundance by station 
-species_abundance <- trawling_data_evhoe21%>%
-  # selection of mesopelagic trawl 
-  filter(Code_Station%in% c("Z0524", "Z0518", "Z0512", "Z0508", 
-                            "Z0503", "Z0497", "Z0492"))%>%
+# Species % biomass and abundance by station
+species_abundance <- trawling_data_evhoe21 %>%
+  # selection of mesopelagic trawl
+  filter(Code_Station %in% c("Z0524", "Z0518", "Z0512", "Z0508",
+                             "Z0503", "Z0497", "Z0492")) %>%
   #deletion when only genus name and genus already sampled in isotopy + A. carbo
-  filter(!Nom_Scientifique%in%c("Cyclothone braueri","Cyclothone microdon", 
-                                "Myctophidae", "Aphanopus carbo"))%>%
-    mutate(
+  filter(
+    !Nom_Scientifique %in% c(
+      "Cyclothone braueri",
+      "Cyclothone microdon",
+      "Myctophidae",
+      "Aphanopus carbo"
+    )
+  ) %>%
+  mutate(
     depth_layer = case_when(
       Code_Station %in% c("Z0508") ~ "epipelagic",
       Code_Station %in% c("Z0492", "Z0512") ~ "upper-mesopelagic",
       Code_Station %in% c("Z0503", "Z0518") ~ "lower-mesopelagic",
       Code_Station %in% c("Z0497") ~ "bathypelagic",
-      Code_Station %in% c("Z0524") ~ "bottom-proximity")) %>%
-  select(depth_layer, Nbr, Nom_Scientifique, Tot_V_HV)%>%
-  group_by(Nom_Scientifique, depth_layer)%>%
-  mutate(nb_ind= sum(Nbr))%>%
-  select(-Nbr)%>%
-  distinct()%>%
-  group_by(depth_layer)%>%
-  mutate(sum_biomass_station=sum(Tot_V_HV))%>%
-  ungroup()%>%
-  group_by(depth_layer, Nom_Scientifique)%>%
-  mutate(pourcentage_biomass_sp= Tot_V_HV/sum_biomass_station*100)%>%
-  select(Nom_Scientifique, pourcentage_biomass_sp, nb_ind, depth_layer)%>%
+      Code_Station %in% c("Z0524") ~ "bottom-proximity"
+    )
+  ) %>%
+  select(depth_layer, Nbr, Nom_Scientifique, Tot_V_HV) %>%
+  group_by(Nom_Scientifique, depth_layer) %>%
+  mutate(nb_ind = sum(Nbr)) %>%
+  select(-Nbr) %>%
+  distinct() %>%
+  group_by(depth_layer) %>%
+  mutate(sum_biomass_station = sum(Tot_V_HV)) %>%
+  ungroup() %>%
+  group_by(depth_layer, Nom_Scientifique) %>%
+  mutate(pourcentage_biomass_sp = Tot_V_HV / sum_biomass_station * 100) %>%
+  select(Nom_Scientifique, pourcentage_biomass_sp, nb_ind, depth_layer) %>%
   mutate(across(where(is.numeric), round, 2))
   
 htmltools::tagList(DT::datatable(species_abundance))
@@ -601,7 +476,6 @@ individuals_si <- isotope_data_fish %>%
 
 # load total trawling data evhoe 2021
 trawling_data_evhoe21 <-  utils::read.csv(here::here("data", "trawling_data_evhoe_2021.csv"), sep = ";", header = T, dec = ".")
-
 
 species_status_biomass <- trawling_data_evhoe21 %>%
   # selection of mesopelagic trawl
@@ -702,6 +576,7 @@ species_status_biomass <- trawling_data_evhoe21 %>%
 
 htmltools::tagList(DT::datatable(species_status_biomass))
 ```
+
 - percentage of biomass sampled for isotopy in each depth layer 
 ```{r}
 #| echo: true
@@ -746,7 +621,7 @@ cbind(CV_d13C=mean_si_species_epi[,"sd_d13C"]/mean_si_species_epi[,"d13C"], CV_d
 # -> intraspecific variability is overall low (<20%)
 
 # checking that species codes are the same in the two tables
-#row.names(mean_si_species_epi)==status_biomass_epi[,"Species_code"] # OK
+row.names(mean_si_species_epi)==status_biomass_epi[,"Species_code"] # OK
 
 # building a single dataframe with all data for computing isotopic diversity indices
 data_fish_epi <-data.frame(mean_si_species_epi[,c("d13C","d15N", "sd_d13C","sd_d15N")], rel_biomass=status_biomass_epi[,"rel_biomass"], Status=status_biomass_epi[,"Status"], latin_name=status_biomass_epi[,"Species_name"])
@@ -919,196 +794,46 @@ result <- as.data.frame(round(ID_scl_ab_nb,3))
 
 ![bathypelagic](5_near_bottom_d13C_d15N.jpeg){width="550"}
 
-## Spider web
+## PCA
 
 ```{r}
 #| echo: true
 #| code-fold: true
 #| label: trophic_indices_df
-#| fig-width: 10
-#| fig-height: 9
-
-# load library
-library(tidyr)
 
 # crate a data frame with all index value
 trophic_indices <- data.frame(
-  group = c("25m", "370m", "555m", "715m", "1000m", "1335m", "1010m-bottom proximity"),
-  IDiv = c(0.952, 0.918, 0.845, 0.928, 0.721, 0.932, 0.994),
-  IDis = c(0.898, 0.620, 0.466, 0.621, 0.451, 0.755, 0.318),
-  IEve= c(0.46, 0.713, 0.789, 0.644, 0.58, 0.633, 0.543), 
-  IUni =c(0.566,0.884, 0.833, 0.599, 0.73, 0.713, 0.758))%>%
-  mutate(across(group, factor, levels=c("25m", "370m", "555m", "715m", "1000m", "1335m", "1010m-bottom proximity")))
+  group = c(
+    "Epipelagic",
+    "Upper-mesopelagic",
+    "Lower-Mesopelagic",
+    "Bathypelagic",
+    "Bottom proximity"
+  ),
+  IDiv = c(0.953, 0.862, 0.536, 0.932, 0.994),
+  IDis = c(0.898, 0.823 , 0.491, 0.755, 0.318),
+  IEve = c(0.448, 0.870 , 0.619, 0.633, 0.543),
+  IUni = c(0.564, 0.800, 0.576, 0.713, 0.758)
+)%>%
+  tibble::column_to_rownames(var="group")
 
-# plot 
-ggradar::ggradar(trophic_indices,
-                 values.radar = c("0", "0.5", "1"),
-                 group.colours ="#004291", group.line.width = 1,
-                 axis.label.size= 4, group.point.size = 3,
-                 grid.label.size = 4)+
-  facet_wrap(~group)+
-  theme_minimal()+
-  theme(strip.text.x = element_text(size=12, face = "bold"),
-        plot.background = element_rect(colour = "white"))+
-  guides(col="none")
+res.pca <- FactoMineR::PCA(trophic_indices, graph = FALSE)
 
-#ggsave("spider_web.png", path = "figures", dpi = 700)
+factoextra::fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "#00778E", 
+                col.ind = "gray50", 
+                arrowsize = 1,
+                title = ""
+)
 
-# spider web for each station 
-# for (i in 1:7) {
-#  print(ggradar::ggradar(trophic_indices[i,],
-#                  values.radar = c("0", "0.5", "1"),
-#                  group.colours ="#0c3d97",  group.line.width = 1.3,
-#                  axis.label.size= 4, group.point.size = 5,
-#                  grid.label.size = 4)+
-#   facet_wrap(~group)+
-#   theme_light()+
-#   theme(strip.text.x = element_text(size=12, face = "bold"))+
-#   guides(col="none"))
-# }
+ggsave("PCA.png", path = "figures", dpi = 700)
+
 ```
+
 
 ```{r}
 #| echo: true
 #| label: trophic_indices_table
 
 htmltools::tagList(DT::datatable(trophic_indices))
-```
-
-# 6.additional analyses
-
-## Isotopic niches by sations
-
-```{r}
-#| echo: true
-#| warning: false
-#| code-fold: true
-#| fig-width: 10
-#| fig-height: 8
-#| label: ncihes_stations 
-
-# colors selection 
-nichecol <- c("#E4A33A", "#F67451", "#D664BE", "#3DA5D9", "#94b3ae",
-              "#18206F", "#FD151B", "#049A8F", "#072AC8", "purple", 
-              "#d193f7", "#d8c2ab", "#678FCB", "#A63A49", "#00547A", "#6B54A0")
-
-# plot
-ggplot(data = isotope_data_fish, 
-                         aes(x = d13c, 
-                             y = d15n)) + 
-  facet_wrap(~factor(trawling_depth))+
-  geom_point(aes(color = species), alpha=0.7, size=1) +
-  scale_color_manual(values=nichecol)+  
-  scale_fill_manual(values=nichecol)+
-  scale_x_continuous(expression({delta}^13*C~'\u2030')) +
-  scale_y_continuous(expression({delta}^15*N~'\u2030'))+
-  stat_ellipse(aes(group = species, fill = species, color = species), 
-               alpha = 0.2, level = p.ell,linewidth = 0.7, type = "norm", geom = "polygon")+
-  theme_light()+
-  theme(legend.text = element_text(size=10),
-        legend.title = element_text(size=10),
-        axis.title = element_text(size=10),
-        axis.text = element_text(size=10))+
-  labs(shape="Taxon", col= "Species", fill="Species")
-
-#ggsave("niches_stations.png", path = "figures", dpi = 700, height = 8, width = 10)
-```
-
-## Krill data
-
--   Total $\delta$<sup>15</sup>N variability = 0.76‰
--   Total $\delta$<sup>13</sup>C variability = 1.1‰
-
-```{r}
-#| echo: true
-#| warning: false
-#| code-fold: true
-#| label: krill_data
-
-# Load data
-isotope_data <-  utils::read.csv(here::here("data", "isotopic_data_2021.csv"), sep = ";", header = T,dec = ",")
-isotope_data_krill <- isotope_data %>% filter (species == "Meganyctiphanes_norvegica")
-
-first_plot <- ggplot(data = isotope_data_krill, aes(x = d13c, y = d15n)) + 
-  geom_point(aes(color= factor(trawling_depth)), size = 3) +
-  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
-  xlab(expression(paste(delta^{13}, "C (\u2030)"))) + 
-  theme(text = element_text(size=16)) + 
-  theme_light()+
-  paletteer::scale_color_paletteer_d("rcartocolor::Teal")
-
-# Summarise By depth 
-data_krill_sum <- isotope_data_krill %>% 
-  group_by(trawling_depth) %>% 
-  summarise(count = n(),
-            mC = mean(d13c), 
-            sdC = sd(d13c), 
-            mN = mean(d15n), 
-            sdN = sd(d15n))
-
-second_plot <- first_plot +
-  geom_errorbar(data = data_krill_sum,
-                mapping = aes(x = mC, y = mN, ymin = mN - 1.96*sdN, ymax = mN + 1.96*sdN, col = factor(trawling_depth)), 
-                width = 0, size=0.8) +
-  geom_errorbarh(data = data_krill_sum, 
-                 mapping = aes(x = mC, y = mN,xmin = mC - 1.96*sdC, xmax = mC + 1.96*sdC, col = factor(trawling_depth)),
-                 height = 0, size=0.8) + 
-  geom_point(data = data_krill_sum, 
-             aes(x = mC, y = mN, fill = factor(trawling_depth),col = factor(trawling_depth), shape = factor(trawling_depth)),
-             size = 5) +
-  scale_shape_manual(values = c(21, 22, 23, 24, 25, 8, 7))+
-  paletteer::scale_fill_paletteer_d("rcartocolor::Teal")+
-  paletteer::scale_color_paletteer_d("rcartocolor::Teal")+
-  labs(shape="Trawling depth (m)", col="Trawling depth (m)", fill= "Trawling depth (m)" )
-
-print(second_plot)
-
-```
-
-### Isotope variability
-
-```{r}
-#| echo: true
-#| warning: false
-#| code-fold: true
-#| label: krill_boxplot
-#| fig-width: 12
-
-boxplot_d13c <- ggpubr::ggboxplot(isotope_data_krill , x = "trawling_depth", y = "d13c", 
-          color = "trawling_depth",fill = "trawling_depth", alpha=0.3,
-          ylab = "d13c", xlab = "trawling_depth")+
-  ylab(expression(paste(delta^{13}, "C (\u2030)"))) +
-  xlab("Trawling depth (m)")+
-  paletteer::scale_fill_paletteer_d("rcartocolor::Teal")+
-  paletteer::scale_color_paletteer_d("rcartocolor::Teal")+
-  guides(fill="none", col="none" ,alpha="none")+
-  theme_light()
-
-boxplot_d15n <- ggpubr::ggboxplot(isotope_data_krill , x = "trawling_depth", y = "d15n", 
-                  color = "trawling_depth", fill = "trawling_depth",
-                  alpha=0.3) +
-  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
-  xlab("Trawling depth (m)")+
-  paletteer::scale_fill_paletteer_d("rcartocolor::Teal")+
-  paletteer::scale_color_paletteer_d("rcartocolor::Teal")+
-  guides(fill="none", col="none" ,alpha="none")+
-  theme_light()
-
-ggpubr::ggarrange(boxplot_d13c, boxplot_d15n)
-
-```
-
-### Tests
-
-```{r}
-#| echo: true
-#| warning: false
-#| code-fold: true
-#| label: test_krill_data
-pairwise.wilcox.test(isotope_data_krill$d13c, isotope_data_krill$trawling_depth,
-                 p.adjust.method = "BH")
-
-pairwise.wilcox.test(isotope_data_krill$d15n, isotope_data_krill$trawling_depth,
-                 p.adjust.method = "BH")
-
 ```
