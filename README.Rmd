@@ -2,7 +2,7 @@
 output: github_document
 ---
 
-# :fish: :fork_and_knife: trophic ecology of deep-sea fishes in the Bay of Biscay, Northeast Atlantic  
+# :fish: :fork_and_knife: Niche partitioning among the deep pelagic fish community in the Bay of Biscay, Northeast Atlantic   
 
 <!-- badges: start -->
 [![License: GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://choosealicense.com/licenses/gpl-2.0/)

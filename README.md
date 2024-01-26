@@ -1,5 +1,5 @@
 
-# :fish: :fork_and_knife: trophic ecology of deep-sea fishes in the Bay of Biscay, Northeast Atlantic
+# :fish: :fork_and_knife: Niche partitioning among the deep pelagic fish community in the Bay of Biscay, Northeast Atlantic
 
 <!-- badges: start -->
 
@@ -8,8 +8,8 @@ GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://chooseal
 <!-- badges: end -->
 
 The aim of the `trophic_ecology_mesopelagic` project is to study the
-trophic ecology of 12 deep pelagic fish species sampled at seven
-different trawl depths on the continental slope of the Bay of Biscay.
+distribution of isotopic niches in the community of deep pelagic fish
+(25-1335m depth) sampled on the continental slope of the Bay of Biscay.
 
 ## Overview
 
@@ -21,16 +21,27 @@ Here is an overview of `trophic_ecology_mesopelagic` content:
 - [`R/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/R):
   contains the functions to run the analysis
 
+- [`_targets`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/index.qmd):
+  contains the workflow of the analyses
+
 - [`index.qmd`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/index.qmd):
-  contains the final report to be knitted with the code to carry out the
-  analysis
+  contains the final report to be knitted
 
 - [`figures/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/figures):
   contains the figures in high resolution
 
+## Comment
+
+- the si_div function comes from the paper by Cucherousset & Villéger
+  2015 (DOI: 10.1016/j.ecolind.2015.03.032)
+- the functions for comparing the size of the isotopic niche of species
+  and their overlap with null models were inspired by the approach of
+  Suchomel et al. (2022) and Brind’Amour & Dubois 2013 (DOI:
+  10.1371/journal.pone.0084198)
+
 ## Code of Conduct
 
-Please note that the `ontogeny_deep_pelagic_fish` project is released
+Please note that the `trophic_ecology_mesopelagic` project is released
 with a [Contributor Code of
 Conduct](https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html).
 By contributing to this project, you agree to abide by its terms.
