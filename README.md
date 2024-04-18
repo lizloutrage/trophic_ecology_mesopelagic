@@ -7,9 +7,8 @@
 GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://choosealicense.com/licenses/gpl-2.0/)
 <!-- badges: end -->
 
-The aim of the `trophic_ecology_mesopelagic` project is to study the
-distribution of isotopic niches in the community of deep pelagic fish
-(25-1335m depth) sampled on the continental slope of the Bay of Biscay.
+The aim of the `trophic_ecology_mesopelagic` project is to reproduce
+analysis performed is the paper by Loutrage et al., .
 
 ## Overview
 
@@ -30,14 +29,29 @@ Here is an overview of `trophic_ecology_mesopelagic` content:
 - [`figures/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/figures):
   contains the figures in high resolution
 
+## Workflow
+
+- calculation of the isotopic niches of species at community level
+  (i.e. with all depths grouped together) and calculation of niche
+  overlaps between species
+- Determining trophic guilds using a clustering method, then comparing
+  the depth distribution of species within trophic guilds to determine
+  whether species use depth to segregate.
+- calculation of isotopic diversity indices (Cucherousset & Villéger,
+  2015)
+- comparison of the niche size values for each species with the values
+  obtained under a null model (at random)
+- comparison of the sum of niche overlap values within each depth layer
+  with the values obtained under a null model (at random)
+
 ## Comment
 
 - the si_div function comes from the paper by Cucherousset & Villéger
   2015 (DOI: 10.1016/j.ecolind.2015.03.032)
 - the functions for comparing the size of the isotopic niche of species
   and their overlap with null models were inspired by the approach of
-  Suchomel et al. (2022) and Brind’Amour & Dubois 2013 (DOI:
-  10.1371/journal.pone.0084198)
+  Suchomel et al. (2022) (DOI: 10.3390/d14080689) and Brind’Amour &
+  Dubois 2013 (DOI: 10.1371/journal.pone.0084198)
 
 ## Code of Conduct
 

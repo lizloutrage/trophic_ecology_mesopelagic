@@ -32,14 +32,14 @@ niche_plot_community <- function(data) {
                                                       "Notoscopelus kroyeri",
                                                       "Melanostigma atlanticum",
                                                       "Meganyctiphanes norvegica"))
-  
+  #colour shade by taxnomic genus
   colors_sp <- c(
     "#6B3777", "#00218F", "#1E78FF", "#78C8F4", "#8E050B", "#FF5064",
     "#FF87A6", "#E5D61D", "#C5AA1A", "#8FDCB6", "#00564E", "#54C797",
     "#5F7F57", "#6CA086", "#344B47", "#9256DD", "black"
   )
   
-  ggplot(data = data_plot, 
+ggplot(data = data_plot, 
          aes(x = d13c, 
              y = d15n)) + 
     geom_point(aes(color = species, shape= taxon), size =1) +
@@ -58,6 +58,5 @@ niche_plot_community <- function(data) {
     labs(shape="Taxon", col= "Species", fill="Species")+
     theme(aspect.ratio = 1)
   
-  ggsave("figures/niches_community_col.png", dpi = 700, height = 10, width = 12)
+  ggsave("niches_community.png", path = "figures", dpi = 700, height = 10, width = 12)
 }
-

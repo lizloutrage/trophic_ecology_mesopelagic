@@ -11,7 +11,6 @@ overlap_matrix <- function(data){
   
 # Prepare data 
 mat_overlap_data <- data%>%
-  filter(taxon=="Fish")%>%
   mutate(species= gsub("_"," ", species))%>%
   mutate(species=recode(species, "Cyclothone"="Cyclothone spp."))
 
@@ -61,7 +60,7 @@ ggcorrplot::ggcorrplot(overlap_matrix, lab = T, outline.color = "white", lab_siz
         plot.background = element_rect(colour = "white"))
 
 #save the plot
-ggsave("matrix_overlap.png", path = "figures", dpi = 700, width = 8, height = 6) 
+ggsave("matrix_overlap_out.png", path = "figures", dpi = 700, width = 8, height = 6) 
 }
 
 

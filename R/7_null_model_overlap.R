@@ -1,25 +1,25 @@
 #' sum of isotopic niches overlap
 #'
-#' @param table_iso : table with species, d15n, d13c and habitat columns
+#' @param isotope_data_fish : table with species, d15n, d13c and habitat columns
 #' @param alea : if true calculate convex hull
 #'
-#' @examples sum_overlap_std(table_iso, alea=TRUE)
+#' @examples sum_overlap_std(isotope_data_fish, alea=TRUE)
 
-sum_overlap <- function(table_iso, alea) {
+sum_overlap <- function(isotope_data_fish, alea) {
   
   # preparation of the file
-  table_iso <- data.frame(na.omit(table_iso))
-  d13C <- table_iso$d13C
-  d15N <- table_iso$d15N
-  X <- table_iso$d13C
-  Y <- table_iso$d15N
-  PID <- 1:nrow(table_iso)
+  isotope_data_fish <- data.frame(na.omit(isotope_data_fish))
+  d13C <- isotope_data_fish$d13C
+  d15N <- isotope_data_fish$d15N
+  X <- isotope_data_fish$d13C
+  Y <- isotope_data_fish$d15N
+  PID <- 1:nrow(isotope_data_fish)
   xydata <- PBSmapping::as.PolyData(cbind(PID, X, Y), projection = NULL, zone = NULL)
   
   # Calculation of ellipse area
   overlap <-
     rKIN::estEllipse(
-      data = table_iso,
+      data = isotope_data_fish,
       x = "d13C",
       y = "d15N",
       group = "species",
@@ -47,28 +47,28 @@ sum_overlap <- function(table_iso, alea) {
 
 #' bootstrap isotopic values in convex hull
 #'
-#' @param table_iso: data frame with species, d13C, d15N and habitat columns
+#' @param isotope_data_fish: data frame with species, d13C, d15N and habitat columns
 #' @param samp: number of samples
 #' @param nbBoot: number of bootstrapping isotopic values in the convex hull
 #'
-#' @examples sum_overlap_boot (table_iso, samp=10, nbBoot=1000)
+#' @examples sum_overlap_boot (isotope_data_fish, samp=10, nbBoot=1000)
 
-sum_overlap_boot <- function(table_iso, samp, nbBoot) {
-  table_iso <- data.frame(na.omit(table_iso))
+sum_overlap_boot <- function(isotope_data_fish, samp, nbBoot) {
+  isotope_data_fish <- data.frame(na.omit(isotope_data_fish))
   nbBoot <- nbBoot
-  SpNames <- table_iso$species  
-  habNames <- unique(table_iso$habitat)
-  d13C <- table_iso$d13C
-  d15N <- table_iso$d15N
+  SpNames <- isotope_data_fish$species  
+  habNames <- unique(isotope_data_fish$habitat)
+  d13C <- isotope_data_fish$d13C
+  d15N <- isotope_data_fish$d15N
   d13Cd15N <- cbind(d13C, d15N)
-  X <- table_iso$d13C
-  Y <- table_iso$d15N
-  PID <- 1:nrow(table_iso)
+  X <- isotope_data_fish$d13C
+  Y <- isotope_data_fish$d15N
+  PID <- 1:nrow(isotope_data_fish)
   xydata <- PBSmapping::as.PolyData(cbind(PID, X, Y), projection = NULL, zone = NULL)
   xyCoord <- sp::coordinates(cbind(X, Y))
   
   ## original sampling
-  res0 <- sum_overlap(table_iso, alea = TRUE)
+  res0 <- sum_overlap(isotope_data_fish, alea = TRUE)
   sres0 <-
     sp::SpatialPolygons(list(sp::Polygons(list(
       sp::Polygon(as.matrix(res0$ConvHull[, 3:4]))
@@ -102,13 +102,11 @@ null_model_overlap <- function(data) {
   
   # prepare data
 isotope_data_fish <- data%>%
-  # only fish
-  filter(taxon == "Fish") %>%
   mutate(species = recode(species, "Cyclothone" = "Cyclothone spp.")) %>%
   arrange(species)
 
 # example by depth layer
-table_iso <- isotope_data_fish %>%
+isotope_data_fish <- isotope_data_fish %>%
   rename(d15N = d15n,
          d13C = d13c) %>%
   mutate(
@@ -124,7 +122,7 @@ table_iso <- isotope_data_fish %>%
 
 # compute analyses ----
 # List of habitats
-habitat_list <- unique(table_iso$habitat)
+habitat_list <- unique(isotope_data_fish$habitat)
 
 # Initialize empty data frames for observed and bootstrapped values
 observed_df <-
@@ -145,7 +143,7 @@ bootstrapped_df <-
 # Loop through each habitat
 for (habitat_name in habitat_list) {
   # Filter the data for the current habitat
-  habitat_data <- table_iso %>%
+  habitat_data <- isotope_data_fish %>%
     filter(habitat == habitat_name)
   
   # Compute observed isotopic diversity indices for the current habitat
@@ -235,15 +233,15 @@ observed_df$habitat <- factor(
 ggplot(bootstrapped_df, aes(x = value)) +
   facet_wrap( ~ habitat) +
   theme_light() +
-  geom_density(aes(y = ..count..), fill = "darkgrey", alpha = 0.7, color = NA) +
+  geom_density(aes(y = ..count..), fill = "gray20", alpha = 0.7, color = NA) +
   geom_vline(data = observed_df, aes(xintercept = value), color = "#045171",
              linetype = "longdash", size = 0.8, alpha=0.8) +
   labs(x = "Sum of isotopic niche overlaps", y="Frequency")+
-  theme(strip.text.x = element_text(size = 12, face = "bold", color = "gray50"),
+  theme(strip.text.x = element_text(size = 12, face = "bold", color = "gray20"),
         strip.background=element_rect(fill="white"),
         axis.title = element_text(size=12),
         axis.text = element_text(size=12))
 
-ggsave("over_depth_layer2.png", path = "figures", dpi = 700, height = 6, width = 9)
+ggsave("over_depth_layer.png", path = "figures", dpi = 700, height = 6, width = 9)
 
 }

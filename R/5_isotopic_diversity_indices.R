@@ -1,53 +1,12 @@
-# Format the data to match the parameters of the si_div function ----
-
-#' format isotope data to match si_div function parameters 
-#'
-#' @param data 
-#'
-#' @return a data frame that can be used in the si_div function
-#'
-
-individuals_si_format <- function(data) {
-  # Load data
-  isotope_data_fish <- data %>% filter (species != "Meganyctiphanes_norvegica")
-  
-  # sourcing the R functions from 'si_div' R script
-  source("R/si_div.R")
-  
-  # Format indiviudal_si
-  individuals_si <- isotope_data_fish %>%
-    select(individual_code, station, d13c, d15n, species_code) %>%
-    rename(
-      indiv_ID = individual_code,
-      d13C = d13c,
-      d15N = d15n,
-      Species_code = species_code
-    ) %>%
-    arrange(Species_code)%>%
-    # group by depth layer 
-    mutate(
-      Status = case_when(
-        station %in% c("Z0508") ~ "epipelagic",
-        station %in% c("Z0492", "Z0512") ~ "upper-mesopelagic",
-        station %in% c("Z0503", "Z0518") ~ "lower-mesopelagic",
-        station %in% c("Z0497") ~ "bathypelagic",
-        station %in% c("Z0524") ~ "bottom-proximity"
-      )
-    ) %>% 
-    select(-station)
-  
-}
-
-
 #' format trawling data to implement in si_div function
 #'
 #' @param data : trawling data with sp biomass distribution
 #'
 #' @return : dataframe with match the format for si_div function
 
-sp_status_biomass_format <- function(data){
+sp_status_biomass_format <- function(trawling_data){
 
-species_status_biomass <- data %>%
+species_status_biomass <- trawling_data %>%
   # selection of mesopelagic trawl
   filter(Code_Station %in% c("Z0524", "Z0518", "Z0512", "Z0508",
                              "Z0503", "Z0497", "Z0492")) %>%
@@ -145,6 +104,52 @@ species_status_biomass <- data %>%
   distinct()
 }
 
+# Format the data to match the parameters of the si_div function ----
+
+#' format isotope data to match si_div function parameters 
+#'
+#' @param data 
+#'
+#' @return a data frame that can be used in the si_div function
+#'
+
+individuals_si_format <- function(isotope_data_fish, species_status_biomass) {
+  
+    # sourcing the R functions from 'si_div' R script
+    source("R/si_div.R")
+  
+  # species code with species names
+  Species_code_df <- species_status_biomass %>%
+    ungroup() %>%
+    dplyr::select(Species_name, Species_code) %>%
+    distinct()
+  
+  # Format indiviudal_si to match si_div function ----
+  individuals_si <- isotope_data_fish%>%
+    dplyr::select(species, station, d13c, d15n) %>%
+    rename(d13C = d13c,
+           d15N = d15n,
+           Species_name = species) %>%
+    group_by(Species_name) %>%
+    # add a unique code for each individu
+    mutate(indiv_ID = paste(Species_name, row_number(), sep = "_")) %>%
+    left_join(Species_code_df, by = "Species_name") %>% 
+    rename(group=Species_name) %>% 
+    ungroup() %>% 
+    relocate(indiv_ID, .before = d13C) %>% 
+    arrange(Species_code)%>%
+    # group by depth layer 
+    mutate(
+      Status = case_when(
+        station %in% c("Z0508") ~ "epipelagic",
+        station %in% c("Z0492", "Z0512") ~ "upper-mesopelagic",
+        station %in% c("Z0503", "Z0518") ~ "lower-mesopelagic",
+        station %in% c("Z0497") ~ "bathypelagic",
+        station %in% c("Z0524") ~ "bottom-proximity"
+      )
+    ) %>% 
+    dplyr::select(-station)
+}
 
 # index calculation ----
 
@@ -233,9 +238,9 @@ diversity_index_calculation <-
     
 # PCA ----
 
-compute_PCA <- function(data){
+compute_PCA <- function(diversity_index){
   
-  isotopic_indices <- data %>% 
+  isotopic_indices <- diversity_index %>% 
     filter(index%in% c("IDis", "IDiv", "IUni", "IEve")) %>% 
     tidyr::pivot_wider(names_from = "index", values_from = "ID_scl_ab") %>% 
     tibble::column_to_rownames(var = "Depth_Layer")

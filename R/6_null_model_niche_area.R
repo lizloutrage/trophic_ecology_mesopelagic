@@ -1,26 +1,26 @@
 #' calculating species ellipse area in a habitat
 #'
-#' @param table_iso: has to have these column names species, d15N, d13C, habitat
+#' @param isotope_data_fish: has to have these column names species, d15N, d13C, habitat
 #' @param alea: if true calculate convex hull
 #'
 #'
-#' @examples ellipse_size(table_iso, alea = TRUE)
+#' @examples ellipse_size(isotope_data_fish, alea = TRUE)
 
-niche_area <- function(table_iso, alea) {
-  table_iso <- data.frame(na.omit(table_iso))
-  SpNames <- table_iso$species
-  d13C <- table_iso$d13C
-  d15N <- table_iso$d15N
-  X <- table_iso$d13C
-  Y <- table_iso$d15N
-  PID <- 1:nrow(table_iso)
+niche_area <- function(isotope_data_fish, alea) {
+  isotope_data_fish <- data.frame(na.omit(isotope_data_fish))
+  SpNames <- isotope_data_fish$species
+  d13C <- isotope_data_fish$d13C
+  d15N <- isotope_data_fish$d15N
+  X <- isotope_data_fish$d13C
+  Y <- isotope_data_fish$d15N
+  PID <- 1:nrow(isotope_data_fish)
   xydata <- PBSmapping::as.PolyData(cbind(PID, X, Y), projection = NULL, zone = NULL)
   xyCoord <- sp::coordinates(cbind(X, Y))
   
   # Calculation ellipse size with rKIN package
   sea <-
     rKIN::estEllipse(
-      data = table_iso,
+      data = isotope_data_fish,
       x = "d13C",
       y = "d15N",
       group = "species",
@@ -40,28 +40,28 @@ niche_area <- function(table_iso, alea) {
 
 #' Function to bootstrap the ellipse size (inspired from Brind'Amour & Dubois 2013 and  Suchomel et al. 2022)
 #'
-#' @param table_iso
+#' @param isotope_data_fish
 #' @param samp
 #' @param nbBoot
 #'
-#' @examples  ellipse_boot(table_iso, samp = 10, nbBoot = 100)
+#' @examples  ellipse_boot(isotope_data_fish, samp = 10, nbBoot = 100)
 
-niche_area_boot <- function(table_iso, samp, nbBoot) {
-  table_iso <- data.frame(na.omit(table_iso))
+niche_area_boot <- function(isotope_data_fish, samp, nbBoot) {
+  isotope_data_fish <- data.frame(na.omit(isotope_data_fish))
   nbBoot <- nbBoot
-  SpNames <- table_iso$species
-  habNames <- unique(table_iso$habitat)
-  d13C <- table_iso$d13C
-  d15N <- table_iso$d15N
+  SpNames <- isotope_data_fish$species
+  habNames <- unique(isotope_data_fish$habitat)
+  d13C <- isotope_data_fish$d13C
+  d15N <- isotope_data_fish$d15N
   d13Cd15N <- cbind(d13C, d15N)
-  X <- table_iso$d13C
-  Y <- table_iso$d15N
-  PID <- 1:nrow(table_iso)
+  X <- isotope_data_fish$d13C
+  Y <- isotope_data_fish$d15N
+  PID <- 1:nrow(isotope_data_fish)
   xydata <- PBSmapping::as.PolyData(cbind(PID, X, Y), projection = NULL, zone = NULL)
   xyCoord <- sp::coordinates(cbind(X, Y))
   
   ## original sampling
-  res0 <- niche_area(table_iso, alea = T)
+  res0 <- niche_area(isotope_data_fish, alea = T)
   
   ##transform points to spatial points
   sres0 <- sp::SpatialPolygons(list(sp::Polygons(list(
@@ -89,7 +89,7 @@ niche_area_boot <- function(table_iso, samp, nbBoot) {
 } 
 
 
-#' Comparaison of random and real species niche area 
+#' Comparison of random and real species niche area 
 #'
 #' @param data 
 #'
@@ -102,13 +102,11 @@ null_model_niche_area <- function(data){
   
   # prepare data
 isotope_data_fish <- data %>%
-  # only fish
-  filter(taxon == "Fish") %>%
   mutate(species = recode(species, "Cyclothone" = "Cyclothone spp.")) %>%
   arrange(species)
 
 # By depth layer
-table_iso <- isotope_data_fish %>%
+isotope_data_fish <- isotope_data_fish %>%
   rename(d15N = d15n,
          d13C = d13c) %>%
   mutate(
@@ -124,7 +122,7 @@ table_iso <- isotope_data_fish %>%
 
 # compute analyses ----
 # List of habitats
-habitat_list <- unique(table_iso$habitat)
+habitat_list <- unique(isotope_data_fish$habitat)
 
 # Create an empty data frame to store results
 results_df <-
@@ -138,17 +136,17 @@ results_df <-
 # Loop through each habitat
 for (habitat_name in habitat_list) {
   # Filter the data for the current habitat
-  habitat_data <- table_iso %>%
+  habitat_data <- isotope_data_fish %>%
     filter(habitat == habitat_name)
   
-  # Compute observed isotopic diversity indices for the current habitat
+  # Compute observed values for the current habitat
   observed_indices <- niche_area(habitat_data, alea = TRUE)
   
   # Number of bootstrap iterations
   nbBoot <- 1000
   samp <- 10
   
-  # Bootstrap the isotopic diversity indices for the current habitat
+  # Bootstrap values for the current habitat
   bootstrapped_indices <- niche_area_boot(habitat_data,
                                           samp = nrow(habitat_data),
                                           nbBoot = nbBoot)
@@ -197,7 +195,7 @@ ggplot(results_df, aes(x = value)) +
   geom_density(
     data = subset(results_df, type == "bootstrapped"),
     aes(y = ..count..),
-    fill = "darkgrey",
+    fill = "gray20",
     alpha = 0.7,
     color = NA
   ) +
@@ -219,14 +217,14 @@ ggplot(results_df, aes(x = value)) +
     strip.text.x = element_text(
       size = 12,
       face = "bold",
-      color = "gray50"
+      color = "gray20"
     ),
     strip.background = element_rect(fill = "white"),
     axis.title = element_text(size = 12),
     axis.text = element_text(size = 12)
   )
 
-ggsave("niches_area_model2.png", path = "figures", dpi = 700, height = 6, width = 9)
+ggsave("niches_area_model.png", path = "figures", dpi = 700, height = 6, width = 9)
   
 }
 
