@@ -46,12 +46,18 @@ Here is an overview of `trophic_ecology_mesopelagic` content:
 
 ## Comment
 
+- We have used the **targets workflow** to run the analysis
+  \[`_targets`\]. To run the analysis run “tar_make()” and to view the
+  workflow run “tar_visnetwork()”.
+- The default parameters applied are 10,000 bivariate random samples
+  with a replacement of n = 10, therefore the analysis takes some time
+  to run, you can change these parameters to reduce the analysis time.
 - the si_div function comes from the paper by Cucherousset & Villéger
   2015 (DOI: 10.1016/j.ecolind.2015.03.032)
 - the functions for comparing the size of the isotopic niche of species
   and their overlap with null models were inspired by the approach of
   Suchomel et al. (2022) (DOI: 10.3390/d14080689) and Brind’Amour &
-  Dubois 2013 (DOI: 10.1371/journal.pone.0084198)
+  Dubois (2013) (DOI: 10.1371/journal.pone.0084198)
 
 ## Code of Conduct
 

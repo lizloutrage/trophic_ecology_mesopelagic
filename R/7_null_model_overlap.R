@@ -150,7 +150,7 @@ for (habitat_name in habitat_list) {
   observed_indices <- sum_overlap(habitat_data, alea = TRUE)
   
   # Number of bootstrap iterations
-  nbBoot <- 1000
+  nbBoot <- 10000
   samp <- 10
   
   # Bootstrap the isotopic diversity indices for the current habitat
@@ -237,11 +237,11 @@ ggplot(bootstrapped_df, aes(x = value)) +
   geom_vline(data = observed_df, aes(xintercept = value), color = "#045171",
              linetype = "longdash", size = 0.8, alpha=0.8) +
   labs(x = "Sum of isotopic niche overlaps", y="Frequency")+
-  theme(strip.text.x = element_text(size = 12, face = "bold", color = "gray20"),
+  theme(strip.text.x = element_text(size = 14, face = "bold", color = "gray20"),
         strip.background=element_rect(fill="white"),
-        axis.title = element_text(size=12),
-        axis.text = element_text(size=12))
+        axis.title = element_text(size=13),
+        axis.text = element_text(size=13))
 
-ggsave("over_depth_layer.png", path = "figures", dpi = 700, height = 6, width = 9)
+ggsave("over_depth_layer_40.png", path = "figures", dpi = 700, height = 6, width = 9)
 
 }

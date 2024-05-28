@@ -32,31 +32,30 @@ niche_plot_community <- function(data) {
                                                       "Notoscopelus kroyeri",
                                                       "Melanostigma atlanticum",
                                                       "Meganyctiphanes norvegica"))
-  #colour shade by taxnomic genus
+  #colour shade by taxonomic genus
   colors_sp <- c(
     "#6B3777", "#00218F", "#1E78FF", "#78C8F4", "#8E050B", "#FF5064",
     "#FF87A6", "#E5D61D", "#C5AA1A", "#8FDCB6", "#00564E", "#54C797",
-    "#5F7F57", "#6CA086", "#344B47", "#9256DD", "black"
+    "#5F7F57", "#6CA086", "#344B47", "#9256DD"
   )
   
 ggplot(data = data_plot, 
          aes(x = d13c, 
              y = d15n)) + 
-    geom_point(aes(color = species, shape= taxon), size =1) +
+    geom_point(aes(color = species), size =1) +
     scale_color_manual(values = colors_sp)+
     scale_fill_manual(values = colors_sp)+
-    scale_shape_manual(values= c(19, 3))+
     scale_x_continuous(expression({delta}^13*C~'\u2030')) +
     scale_y_continuous(expression({delta}^15*N~'\u2030'))+
     stat_ellipse(aes(group = species, fill = species, color = species), 
-                 alpha = 0.12, level = 0.40,linewidth = 0.5, type = "norm", geom = "polygon")+
+                 alpha = 0.2, level = 0.40,linewidth = 0.5, type = "norm", geom = "polygon")+
     theme_bw()+
-    theme(legend.text = element_text(size=13),
-          legend.title = element_text(size=13),
-          axis.title = element_text(size=15),
+    theme(legend.text = element_text(size=13, face = "italic"),
+          legend.title = element_text(size=15),
+          axis.title = element_text(size=16),
           axis.text = element_text(size=15))+
-    labs(shape="Taxon", col= "Species", fill="Species")+
+    labs (col= "Species", fill="Species")+
     theme(aspect.ratio = 1)
   
-  ggsave("niches_community.png", path = "figures", dpi = 700, height = 10, width = 12)
+  ggsave("niches_community.png", path = "figures", dpi = 700, height = 8, width = 10)
 }

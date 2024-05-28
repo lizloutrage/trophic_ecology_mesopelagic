@@ -50,17 +50,17 @@ return(elp.olp_community)
 
 overlap_matrix_plot<- function(overlap_matrix){
   
-  #plot 
+#plot 
 ggcorrplot::ggcorrplot(overlap_matrix, lab = T, outline.color = "white", lab_size = 3, tl.cex = 10)+
   scale_fill_gradient2(limit = c(0,1), low = "white", high = "grey50", mid = "grey80", midpoint = 0.5)+
   labs(fill="Overlap value")+
-  theme(axis.text = element_text(face="italic", size = 13),
-        legend.text = element_text(size=10),
-        legend.title = element_text(size=10),
+  theme(axis.text = element_text(face="italic", size = 14),
+        legend.text = element_text(size=11),
+        legend.title = element_text(size=11),
         plot.background = element_rect(colour = "white"))
 
 #save the plot
-ggsave("matrix_overlap_out.png", path = "figures", dpi = 700, width = 8, height = 6) 
+ggsave("matrix_overlap.png", path = "figures", dpi = 700, width = 8, height = 6) 
 }
 
 

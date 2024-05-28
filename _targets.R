@@ -6,15 +6,15 @@
 
 ## Attach required packages ----
 library(targets)
-tar_option_set(packages = c("dplyr", "ggplot2"))
+targets::tar_option_set(packages = c("dplyr", "ggplot2"))
 
-tar_source()
+targets::tar_source(files = "R")
 
 list(
   # 1. Isotopic niches ----
   # Load isotope data (DOI:)
   tar_target(
-    isotope_data,
+    isotope_data_fish,
     readxl::read_excel(
       here::here(
         "data",
@@ -31,8 +31,8 @@ list(
       ) %>%
       # creation of a d13c column (see mat & met), species with a C:N ratio:
       # >5: have undergone delipidation,
-      # between 3.5 and 5: mathematically corrected (following Post et al. 2007) 
-      # < 3.5: no corrected 
+      # between 3.5 and 5: mathematically corrected (following Post et al. 2007)
+      # < 3.5: no corrected
       mutate(
         d13c = case_when(
           !is.na(`δ13C (cyclohexane-delipidated)`) ~ `δ13C (cyclohexane-delipidated)`,
@@ -44,14 +44,12 @@ list(
       mutate(
         taxon = case_when(Class == "Actinopteri" ~ "Fish",
                           Class == "Malacostraca" ~ "Krill")
-      )
-  ),
+      ) %>%
+      filter(taxon == "Fish")
+  ), 
   
   # plot the isotopic niche of each species (all depth pooled)
-  tar_target(species_niche, niche_plot_community(isotope_data)),
-  
-  # select only fish data 
-  tar_target(isotope_data_fish, isotope_data %>% filter(taxon=="Fish")),
+  tar_target(species_niche, niche_plot_community(isotope_data_fish)),
   
   # calculation of the matrix niche overlap
   tar_target(overlap_mx, overlap_matrix(isotope_data_fish)),

@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ## Isotopie data:
-  - [`data/isotopic_data.csv`]: contains data on the $\delta$<sup>15</sup>N and $\delta$<sup>13</sup>C values (‰) of each individual sampled and the trawl depth (m) at which each individual was sampled.
+  - [`data/C_N_isotopes_deep_pelagic_fish_BayofBiscay_2021.csv`]: contains data on the $\delta$<sup>15</sup>N and $\delta$<sup>13</sup>C values (‰) of each individual sampled and the trawl depth (m) at which each individual was sampled.(DOI:)
   
 ## Trawling data: 
-  - [`data/trawling_data_set_evhoe_21.csv`]: Includes full trawl data from the 2021 campaign (all individuals, not just sampled for isotopy).
+  - [`data/trawling_data_set_evhoe_21.csv`]: Includes full trawl data from the 2021 campaign (all individuals, not just sampled for isotopy).(DOI:)

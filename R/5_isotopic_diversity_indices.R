@@ -100,7 +100,7 @@ species_status_biomass <- trawling_data %>%
   select(-Code_Espece_Campagne) %>%
   relocate(Status, .after = rel_biomass) %>%
   relocate(Species_code, .after = Species_name) %>%
-  arrange(Species_name) %>%
+  arrange(Species_code) %>%
   distinct()
 }
 
@@ -190,9 +190,11 @@ diversity_index_calculation <-
       # computing mean Stable Isotope values for each species
       # "group" column identical to species_code to fit with input format of function meanSI_group
       # no "weight" input as number of individuals sampled per species did not mirror actual species biomass
-      individuals_si_essai <-
-        data.frame(group = individuals_si_filtered[, "Species_code"], individuals_si_filtered)
-      mean_si_species <- meanSI_group(individuals_si_essai)
+      individuals_si_depth <-individuals_si_filtered %>% 
+        as.data.frame() %>% 
+        mutate(group = Species_code)
+      
+      mean_si_species <- meanSI_group(individuals_si_depth)
       
       # computing coefficent of variation within each species to assess intraspecific variability
       cbind(CV_d13C = mean_si_species[, "sd_d13C"] / mean_si_species[, "d13C"],
@@ -251,8 +253,9 @@ compute_PCA <- function(diversity_index){
                               col.var = "#00778E", 
                               col.ind = "gray50", 
                               arrowsize = 1,
-                              title = ""
+                              title = "",
+                              
   )
   
-  ggsave("PCA.png", path = "figures", dpi = 700)
+  ggsave("PCA.png", path = "figures", dpi = 700, height = 5, width = 7)
 }

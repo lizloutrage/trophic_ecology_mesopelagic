@@ -19,7 +19,7 @@ niche_area <- function(isotope_data_fish, alea) {
   
   # Calculation ellipse size with rKIN package
   sea <-
-    rKIN::estEllipse(
+    rKIN::estEllipse (
       data = isotope_data_fish,
       x = "d13C",
       y = "d15N",
@@ -143,7 +143,7 @@ for (habitat_name in habitat_list) {
   observed_indices <- niche_area(habitat_data, alea = TRUE)
   
   # Number of bootstrap iterations
-  nbBoot <- 1000
+  nbBoot <- 10000
   samp <- 10
   
   # Bootstrap values for the current habitat
@@ -205,7 +205,7 @@ ggplot(results_df, aes(x = value)) +
       x = value,
       xend = value,
       y = 0,
-      yend = 21800
+      yend = 218000
     ),
     color = "#045171",
     linetype = "longdash",
@@ -215,16 +215,16 @@ ggplot(results_df, aes(x = value)) +
   labs(x = "Isotopic niche size", y = "Frequency") +
   theme(
     strip.text.x = element_text(
-      size = 12,
+      size = 14,
       face = "bold",
       color = "gray20"
     ),
     strip.background = element_rect(fill = "white"),
-    axis.title = element_text(size = 12),
-    axis.text = element_text(size = 12)
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 13)
   )
 
-ggsave("niches_area_model.png", path = "figures", dpi = 700, height = 6, width = 9)
+ggsave("niches_area_model_40.png", path = "figures", dpi = 700, height = 6, width = 9)
   
 }
 

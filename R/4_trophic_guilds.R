@@ -45,7 +45,7 @@ dend <- overlap_mx %>%
   hclust() %>%
   as.dendrogram()
 
-#png("figures/dendrogram.png", units="in", width=6, height=4, res=700)
+png("figures/dendrogram.png", units="in", width=6, height=4, res=700)
 par(mar = c(1, 1, 1, 10))
 dend %>%
   dendextend::set("labels_col",
@@ -63,8 +63,6 @@ dend %>%
                     "#86BBBD",
                     "#86BBBD",
                     "#86BBBD",
-                    "#86BBBD",
-                    "#86BBBD",
                     "#ECA72C",
                     "#ECA72C",
                     "#ECA72C",
@@ -75,10 +73,14 @@ dend %>%
                     "#9BABE8",
                     "#9BABE8",
                     "#D35D4A",
+                    "#D35D4A",
+                    "#D35D4A",
                     "#D35D4A"
                   )
   ) %>%
   plot(horiz = TRUE, axes = FALSE)
+
+dev.off()
 #dev.off()
 }
 
@@ -90,33 +92,35 @@ dend %>%
 depth_distribution_plot <- function(density_distribution){
   
   # assign each species to a cluster (define above)
+  # /!\ to be modified to be more reproducible 
 density_distribution_cluster <- density_distribution %>%
   mutate(
     cluster = case_when(
       Nom_Scientifique %in% c(
         "Argyropelecus olfersii",
         "Lampanyctus crocodilus",
-        "Benthosema glaciale",
-        "Myctophum punctatum",
-        "Serrivomer beanii"
-      ) ~ 4,
+        "Benthosema glaciale"
+      ) ~ 1,
       Nom_Scientifique %in% c(
         "Lampanyctus macdonaldi",
         "Maulisia argipalla",
         "Searsia koefoedi"
-      ) ~ 5,
+      ) ~ 3,
       Nom_Scientifique %in% c(
         "Cyclothone spp.",
         "Notoscopelus bolini",
         "Notoscopelus kroyeri",
         "Melanostigma atlanticum"
-      ) ~ 3,
-      Nom_Scientifique %in% c("Xenodermichthys copei", "Maurolicus muelleri") ~
-        1,
-      Nom_Scientifique %in% c("Arctozenus risso", "Lestidiops sphyrenoides") ~
-        2
+      ) ~ 2,
+      Nom_Scientifique %in% c(
+        "Xenodermichthys copei",
+        "Serrivomer beanii",
+        "Myctophum punctatum",
+        "Maurolicus muelleri"
+      ) ~ 5,
+      Nom_Scientifique %in% c("Arctozenus risso", "Lestidiops sphyrenoides") ~ 4
     )
-  ) %>%
+  )%>%
   group_by(Nom_Scientifique) %>%
   arrange(desc(trawling_depth))
 
@@ -127,8 +131,8 @@ density_distribution_cluster$Nom_Scientifique = with(density_distribution_cluste
 ggplot(density_distribution_cluster,
        aes(x = trawling_depth, y = Nom_Scientifique, group = Nom_Scientifique, 
            col=factor(cluster), fill=factor(cluster)))+ 
-  scale_fill_manual(values = c("#D35D4A", "#9BABE8", "#ECA72C", "#86BBBD","#4D85A8"))+
-  scale_color_manual(values = c("#D35D4A", "#9BABE8", "#ECA72C", "#86BBBD","#4D85A8"))+
+  scale_fill_manual(values = c("#86BBBD","#ECA72C", "#4D85A8","#9BABE8","#D35D4A"))+
+  scale_color_manual(values = c("#86BBBD","#ECA72C", "#4D85A8","#9BABE8","#D35D4A"))+
   ggridges::stat_density_ridges(quantile_lines = TRUE, quantiles = 0.5 , alpha=0.4, size=0.7,
                                 rel_min_height = 0.002, scale=1.2)+
   theme_bw()+
@@ -136,13 +140,13 @@ ggplot(density_distribution_cluster,
   scale_x_reverse(limits = c( 1400,0))+
   coord_flip()+
   ylab(label = "")+ xlab("Depth (m)")+
-  theme(axis.text.y = element_text(size=15),
+  theme(axis.text.y = element_text(size=17),
         axis.text.x = element_text(face="italic", size=13, angle=80, vjust = 0.5, hjust=0.5),
         axis.title.x = element_text(size=15),
-        axis.title.y = element_text(size=15))+
+        axis.title.y = element_text(size=17))+
   guides(fill="none", col="none", alpha="none")
 
-ggsave("density_plot.png", path = "figures", dpi = 600, height = 8, width = 10)
+ggsave("density_plot.png", path = "figures", dpi = 700, height = 8, width = 10)
 }
 
 

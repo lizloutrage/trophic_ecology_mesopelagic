@@ -8,13 +8,16 @@
 #' @examples
 
 density_distrubtion <- function(data) {
+  
+  # Partie à modifier quand données prêtes à soumettre en libre accès 
+  
   # density distribution from biomass value
   density_distribution <- data %>%
     select(Nom_Scientifique, Tot_V_HV, Code_Station) %>%
-    #selection of pelagic trawling
+    #selection of mesopelagic trawls
     filter(Code_Station %in% c("Z0524", "Z0518", "Z0512", "Z0508",
                                "Z0503", "Z0497", "Z0492")) %>%
-    #selection of species sampled for isotope
+    #selection of species sampled for stable isotope analysis 
     filter(
       Nom_Scientifique %in% c(
         "Arctozenus risso",
@@ -36,6 +39,7 @@ density_distrubtion <- function(data) {
       )
     ) %>%
     mutate(Nom_Scientifique = recode(Nom_Scientifique, "Cyclothone" = "Cyclothone spp.")) %>%
+    # add trawling depth 
     mutate(
       trawling_depth = case_when(
         Code_Station %in% c("Z0508") ~ 25,
@@ -49,9 +53,11 @@ density_distrubtion <- function(data) {
     ) %>%
     distinct() %>%
     group_by(Nom_Scientifique) %>%
+    # sum biomass by species
     mutate(sum_sp = sum(Tot_V_HV)) %>%
     ungroup() %>%
     group_by(trawling_depth, Nom_Scientifique) %>%
+    # % of biomass by depth layer by species 
     mutate(pourcentage_bio = sum(Tot_V_HV / sum_sp * 100)) %>%
     # Selection of trawling depth
     select(Nom_Scientifique, trawling_depth, pourcentage_bio) %>%
