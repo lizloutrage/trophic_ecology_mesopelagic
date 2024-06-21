@@ -1,107 +1,94 @@
 #' format trawling data to implement in si_div function
 #'
-#' @param data : trawling data with sp biomass distribution
+#' @param data : trawling data with sp biomass by depth layer and species codes
 #'
 #' @return : dataframe with match the format for si_div function
 
-sp_status_biomass_format <- function(trawling_data){
-
-species_status_biomass <- trawling_data %>%
-  # selection of mesopelagic trawl
-  filter(Code_Station %in% c("Z0524", "Z0518", "Z0512", "Z0508",
-                             "Z0503", "Z0497", "Z0492")) %>%
-  #deletion when only genus name and genus already sampled in isotope + A. carbo
-  filter(
-    !Nom_Scientifique %in% c(
-      "Cyclothone braueri",
-      "Cyclothone microdon",
-      "Myctophidae",
-      "Aphanopus carbo",
-      "Lampanyctus"
-    )
-  ) %>%
-  # group by depth layer 
-  mutate(
-    Status = case_when(
-      Code_Station %in% c("Z0508") ~ "epipelagic",
-      Code_Station %in% c("Z0492", "Z0512") ~ "upper-mesopelagic",
-      Code_Station %in% c("Z0503", "Z0518") ~ "lower-mesopelagic",
-      Code_Station %in% c("Z0497") ~ "bathypelagic",
-      Code_Station %in% c("Z0524") ~ "bottom-proximity"
-    )
-  ) %>%
-  select(Status,
-         Tot_V_HV,
-         Nom_Scientifique,
-         Code_Espece_Campagne) %>%
-  distinct() %>%
-  # sum species biomass by depth layer
-  group_by(Nom_Scientifique, Status) %>%
-  mutate(biomass_sp = sum(Tot_V_HV)) %>%
-  select(-Tot_V_HV) %>%
-  distinct() %>%
-  # sum of total biomass by depth layer
-  group_by(Status) %>%
-  mutate(biomass_tot = sum(biomass_sp)) %>%
-  # relative biomass of each species by station
-  mutate(rel_biomass = biomass_sp / biomass_tot * 100) %>%
-  select(-c(biomass_sp, biomass_tot)) %>%
-  # selection of species sampled for isotopy in each depth
-  filter(
-    Status == "epipelagic" &
-      Nom_Scientifique %in% c(
-        "Lestidiops sphyrenoides",
-        "Maurolicus muelleri",
-        "Myctophum punctatum",
-        "Notoscopelus kroyeri",
-        "Notoscopelus bolini"
-      ) |
-      Status == "upper-mesopelagic" &
-      Nom_Scientifique %in% c(
-        "Arctozenus risso",
-        "Argyropelecus olfersii",
-        "Lampanyctus crocodilus",
-        "Myctophum punctatum",
-        "Notoscopelus kroyeri",
-        "Xenodermichthys copei"
-      ) |
-      Status == "lower-mesopelagic" &
-      Nom_Scientifique %in% c(
-        "Arctozenus risso",
-        "Argyropelecus olfersii",
-        "Cyclothone",
-        "Benthosema glaciale",
-        "Lampanyctus crocodilus",
-        "Maulisia argipalla",
-        "Searsia koefoedi",
-        "Serrivomer beanii",
-        "Xenodermichthys copei"
-      ) |
-      Status == "bathypelagic" &
-      Nom_Scientifique %in% c(
-        "Argyropelecus olfersii",
-        "Lampanyctus crocodilus",
-        "Lampanyctus macdonaldi",
-        "Myctophum punctatum",
-        "Serrivomer beanii",
-        "Xenodermichthys copei"
-      ) |
-      Status == "bottom-proximity" &
-      Nom_Scientifique %in% c(
-        "Argyropelecus olfersii",
-        "Lampanyctus crocodilus",
-        "Melanostigma atlanticum",
-        "Serrivomer beanii",
-        "Xenodermichthys copei"
+sp_status_biomass_format <- function(trawling_data, Species_code) {
+  species_status_biomass <- trawling_data %>%
+    # group by depth layer (Loutrage et al., 2023)
+    mutate(
+      Status = case_when(
+        station %in% c("Z0508") ~ "epipelagic",
+        station %in% c("Z0492", "Z0512") ~ "upper-mesopelagic",
+        station %in% c("Z0503", "Z0518") ~ "lower-mesopelagic",
+        station %in% c("Z0497") ~ "bathypelagic",
+        station %in% c("Z0524") ~ "bottom-proximity"
       )
-  ) %>%
-  mutate(Species_code = tolower(Code_Espece_Campagne)) %>%
-  rename(Species_name = Nom_Scientifique) %>%
-  select(-Code_Espece_Campagne) %>%
-  relocate(Status, .after = rel_biomass) %>%
-  relocate(Species_code, .after = Species_name) %>%
-  arrange(Species_code) %>%
-  distinct()
+    ) %>%
+    # Calculate proportion of biomass of sampled species  
+    # selection of species sampled for isotopy in each depth
+    filter(
+      Status == "epipelagic" &
+        species %in% c(
+          "Lestidiops sphyrenoides",
+          "Maurolicus muelleri",
+          "Myctophum punctatum",
+          "Notoscopelus kroyeri",
+          "Notoscopelus bolini"
+        ) |
+        Status == "upper-mesopelagic" &
+        species %in% c(
+          "Arctozenus risso",
+          "Argyropelecus olfersii",
+          "Lampanyctus crocodilus",
+          "Myctophum punctatum",
+          "Notoscopelus kroyeri",
+          "Xenodermichthys copei"
+        ) |
+        Status == "lower-mesopelagic" &
+        species %in% c(
+          "Arctozenus risso",
+          "Argyropelecus olfersii",
+          "Cyclothone",
+          "Benthosema glaciale",
+          "Lampanyctus crocodilus",
+          "Maulisia argipalla",
+          "Searsia koefoedi",
+          "Serrivomer beanii",
+          "Xenodermichthys copei"
+        ) |
+        Status == "bathypelagic" &
+        species %in% c(
+          "Argyropelecus olfersii",
+          "Lampanyctus crocodilus",
+          "Lampanyctus macdonaldi",
+          "Myctophum punctatum",
+          "Serrivomer beanii",
+          "Xenodermichthys copei"
+        ) |
+        Status == "bottom-proximity" &
+        species %in% c(
+          "Argyropelecus olfersii",
+          "Lampanyctus crocodilus",
+          "Melanostigma atlanticum",
+          "Serrivomer beanii",
+          "Xenodermichthys copei"
+        )
+    ) %>%
+    inner_join(Species_code) %>% 
+    # create code for each species 
+    select(Status,
+           biomass_sp,
+           species,
+           Species_code) %>%
+    distinct() %>%
+    # sum species biomass by depth layer
+    group_by(species, Status) %>%
+    mutate(biomass_sp_depth = sum(biomass_sp)) %>%
+    select(-biomass_sp) %>%
+    distinct() %>%
+    # sum of total biomass by depth layer
+    group_by(Status) %>%
+    mutate(biomass_tot = sum(biomass_sp_depth)) %>%
+    # relative biomass of each species by station
+    mutate(rel_biomass = biomass_sp_depth / biomass_tot * 100) %>%
+    select(-c(biomass_sp_depth, biomass_tot)) %>%
+    rename(Species_name = species) %>%
+    relocate(Status, .after = rel_biomass) %>%
+    relocate(Species_code, .after = Species_name) %>%
+    arrange(Species_code) %>%
+    distinct()
 }
 
 # Format the data to match the parameters of the si_div function ----
@@ -113,27 +100,21 @@ species_status_biomass <- trawling_data %>%
 #' @return a data frame that can be used in the si_div function
 #'
 
-individuals_si_format <- function(isotope_data_fish, species_status_biomass) {
+individuals_si_format <- function(isotope_data_fish, species_status_biomass, Species_code) {
   
     # sourcing the R functions from 'si_div' R script
     source("R/si_div.R")
   
-  # species code with species names
-  Species_code_df <- species_status_biomass %>%
-    ungroup() %>%
-    dplyr::select(Species_name, Species_code) %>%
-    distinct()
-  
   # Format indiviudal_si to match si_div function ----
   individuals_si <- isotope_data_fish%>%
     dplyr::select(species, station, d13c, d15n) %>%
+    inner_join(Species_code) %>%
     rename(d13C = d13c,
            d15N = d15n,
            Species_name = species) %>%
     group_by(Species_name) %>%
-    # add a unique code for each individu
+    # add a unique code for each individual
     mutate(indiv_ID = paste(Species_name, row_number(), sep = "_")) %>%
-    left_join(Species_code_df, by = "Species_name") %>% 
     rename(group=Species_name) %>% 
     ungroup() %>% 
     relocate(indiv_ID, .before = d13C) %>% 
@@ -236,6 +217,7 @@ diversity_index_calculation <-
     
     # Print the final data frame
     print(ID_scl_ab_df)
+    return(ID_scl_ab_df)
   }
     
 # PCA ----

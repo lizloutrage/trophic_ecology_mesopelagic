@@ -8,7 +8,15 @@ GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://chooseal
 <!-- badges: end -->
 
 The aim of the `trophic_ecology_mesopelagic` project is to reproduce
-analysis performed is the paper by Loutrage et al., .
+analysis performed is the paper by Loutrage et al.,2024 .
+
+## Data:
+
+All raw data are available in the online directory data.InDoRES platform
+<https://data.indores.fr/> (any use must include the reference and DOI):
+
+- DOI of the trawling data set: <https://doi.org/10.48579/PRO/AIKOEB>
+- DOI of the isotopic data set: <https://doi.org/10.48579/PRO/D7MBHB>
 
 ## Overview
 

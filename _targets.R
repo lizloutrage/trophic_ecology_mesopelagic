@@ -8,6 +8,7 @@
 library(targets)
 targets::tar_option_set(packages = c("dplyr", "ggplot2"))
 
+# load functions
 targets::tar_source(files = "R")
 
 list(
@@ -39,14 +40,8 @@ list(
           `CN (untreated)` < 3.5 ~ `δ13C (untreated)`,
           TRUE ~ `δ13C (untreated)` - 3.32 + 0.99 * `CN (untreated)`
         )
-      ) %>%
-      # add taxon column
-      mutate(
-        taxon = case_when(Class == "Actinopteri" ~ "Fish",
-                          Class == "Malacostraca" ~ "Krill")
-      ) %>%
-      filter(taxon == "Fish")
-  ), 
+      )
+  ),
   
   # plot the isotopic niche of each species (all depth pooled)
   tar_target(species_niche, niche_plot_community(isotope_data_fish)),
@@ -59,15 +54,30 @@ list(
   
   # 2. Depth segregation----
   # Load trawling data
-  tar_target(trawling_data,
-             utils::read.csv(
-               here::here("data", "trawling_data_evhoe_2021.csv"),
-               sep = ";",
-               header = T,
-               dec = "."
-             )),
+  tar_target(
+    trawling_data,
+    readxl::read_excel(
+      here::here(
+        "data",
+        "biomass_abundance_deep_pelagic_fish_Bay_Biscay.xlsx"
+      ),
+      3
+    ) %>%
+      # rename columns for simplicity
+      rename(
+        trawling_depth = `Trawling depth [m]`,
+        station = `Station label`,
+        biomass_sp = `Trawl sum biomass [kg]`,
+        species = Species
+      ) %>%
+      # select data of interest
+      filter(Year == "2021") %>%
+      select(trawling_depth, station, biomass_sp, species) %>%
+      distinct() %>%
+      mutate(biomass_sp = as.numeric(biomass_sp))
+  ),
   
-  # Calculation of density depth distribution by species sampled 
+  # Calculation of density depth distribution by species sampled
   tar_target(
     density_distribution_data,
     density_distrubtion(trawling_data)
@@ -88,20 +98,35 @@ list(
   # plot depth distribution
   tar_target(
     depth_distribution,
-    depth_distribution_plot(density_distribution_data)
+    depth_distribution_plot(density_distribution_data, cluster_definition)
   ),
   
   # 3. Isotopic diversity indices ----
   
   # Data formatting to match si_div function parameters
-  # species relative biomass in each depth layer 
-    tar_target(
+  # Species code
+  tar_target(
+    Species_code,
+    utils::read.csv(
+      here::here("data", "species_code.csv"),
+      sep = ";",
+      header = T,
+      dec = "."
+    ) %>%
+      mutate(Species_code = tolower(Species_code))
+  ),
+  
+  # species relative biomass in each depth layer
+  tar_target(
     species_status_biomass,
-    sp_status_biomass_format(trawling_data)
+    sp_status_biomass_format(trawling_data, Species_code)
   ),
   
   # individuals stable isotopes values
-  tar_target(individuals_si, individuals_si_format(isotope_data_fish, species_status_biomass)),
+  tar_target(
+    individuals_si,
+    individuals_si_format(isotope_data_fish, species_status_biomass, Species_code)
+  ),
   
   # Isotopic diversity index calculation
   tar_target(
@@ -118,5 +143,8 @@ list(
   tar_target(niche_area_sp, null_model_niche_area(isotope_data_fish)),
   
   # Sum of species niche overlap
-  tar_target(overlap_sp, null_model_overlap(isotope_data_fish))
+  tar_target(overlap_sp, null_model_overlap(isotope_data_fish)),
+  
+  # 5. Appendix ----
+  tar_target(niche_cluster, plot_niche_cluster(isotope_data_fish))
 )

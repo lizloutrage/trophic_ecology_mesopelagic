@@ -126,13 +126,13 @@ return(data_scaled)
 ##################################################################################################################################################################
 ##################################################################################################################################################################
 
-# generic graphical functions used in 'IDiversity' and 'IOverlap'
-
-# axis titles for the 4 types of istopes used
-tit_d13C<-expression(bold(paste(delta^"13",C,sep=""))) ; scl_tit_d13C<-expression(bold(paste("Scaled ",delta^"13",C,sep="")))
-tit_d15N<-expression(bold(paste(delta^"15",N,sep=""))) ; scl_tit_d15N<-expression(bold(paste("Scaled ",delta^"15",N,sep="")))
-tit_dD<-expression(bold(paste(delta^"",D,sep=""))) ; scl_tit_dD<-expression(bold(paste("Scaled ",delta^"",D,sep="")))
-tit_d34S<-expression(bold(paste(delta^"34",S,sep=""))) ; scl_tit_d34S<-expression(bold(paste("Scaled ",delta^"34",S,sep="")))
+# # generic graphical functions used in 'IDiversity' and 'IOverlap'
+# 
+# # axis titles for the 4 types of istopes used
+# tit_d13C<-expression(bold(paste(delta^"13",C,sep=""))) ; scl_tit_d13C<-expression(bold(paste("Scaled ",delta^"13",C,sep="")))
+# tit_d15N<-expression(bold(paste(delta^"15",N,sep=""))) ; scl_tit_d15N<-expression(bold(paste("Scaled ",delta^"15",N,sep="")))
+# tit_dD<-expression(bold(paste(delta^"",D,sep=""))) ; scl_tit_dD<-expression(bold(paste("Scaled ",delta^"",D,sep="")))
+# tit_d34S<-expression(bold(paste(delta^"34",S,sep=""))) ; scl_tit_d34S<-expression(bold(paste("Scaled ",delta^"34",S,sep="")))
 
 
 # graphic function to plot isotopic space

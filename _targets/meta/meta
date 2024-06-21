@@ -1,38 +1,39 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
 .Random.seed|object|c2de64f261c9bd40|||||||||||||||
 biomass_data_si_div|stem|10f66c29e009f6d6|57fd1901cfc9509c|ea958c225aeab9b6|997318006||t19748.3642458447s|3af244946e4f7221|1106|rds|local|vector|||0.13||
-cluster_definition|stem|021ee7da59a5d869|376ba2d756e16ee9|514188832d7ea51c|1219579670||t19850.3449298276s|6f5955ab594f49f2|329|rds|local|vector|||0.01||
+cluster_definition|stem|5a8ad98019701d70|376ba2d756e16ee9|c29b8ab6e5b94115|1219579670||t19894.6319513773s|e5ebf5c8f4f0f43f|385|rds|local|vector|||0||
 compute_PCA|function|0a9997a449f30c7a|||||||||||||||
 data_prepare|stem|d7bde03e9fd0488b|70eb476c2e2d5ae3|fd84cea2b333893c|94498290||t19747.5902455771s|0a1588e865a9fcad|666|rds|local|vector|||0.01||
 data_prepare_plot|stem|408e478e988edf91|70eb476c2e2d5ae3|e130185c3427bf38|-1175640337||t19747.5947351003s||28889|rds|local|vector|||0.02||impossible de trouver la fonction prepare_data
-dendrogram|stem|e80c6056fc17432d|8bd57349b2ec0960|f102e9db3428435d|-658665585||t19858.3034749393s|edb5491f686fb474|82|rds|local|vector|||0.52||
+dendrogram|stem|13d3a872ce6b805c|8bd57349b2ec0960|a53620007323f054|-658665585||t19894.3727515788s|988429bb6428792b|83|rds|local|vector|||0.47||
 density_distribution|stem|729439141d11e45c|6a137ca42741027c|105d10acb1f4a80a|-934385213||t19747.6476725957s|aa111a836daa5e44|5117|rds|local|vector|||0.42|1m22mThere was 1 warning in mutate.1m22m36mℹ39m In argument acrosspourcentage_bio, round, 0.36mℹ39m In group 1 trawling_depth  25, Nom_Scientifique  Benthosema  glaciale.Caused by warning1m22m33m39m The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE|
-density_distribution_data|stem|2c7d636aa0b4fe0a|1c9215ee40879bd8|798062636a9847ae|482877640||t19850.3294435225s|79eda214aeb7b313|5117|rds|local|vector|||0.22|There was 1 warning in mutate.ℹ In argument acrosspourcentage_bio, round, 0.ℹ In group 1 trawling_depth  25 and Nom_Scientifique  Benthosema  glaciale.Caused by warning The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE|
-density_distrubtion|function|6e1d203ca963d592|||||||||||||||
-depth_distribution|stem|92fdf8ab8c810530|3dcd014e931fc025|b2333a978285c2ff|-689479444||t19858.3160276761s|e12065d620e41fd5|76|rds|local|vector|||2.33|Ignoring unknown parameters size|
-depth_distribution_plot|function|c6c930de098ca125|||||||||||||||
-diversity_index|stem|9179cb8ec829591d|4ffc80a50267c5be|0d94830811defce9|-942261501||t19858.3837682358s|16d628c6c78921a2|607|rds|local|vector|||9.02||
-diversity_index_calculation|function|5f92a53be584c687|||||||||||||||
+density_distribution_data|stem|27416b14bf308922|1c9215ee40879bd8|24bf733293a6fe1f|482877640||t19894.6319509322s|48bad4b4ec277ad6|1029|rds|local|vector|||0.64|There was 1 warning in mutate.ℹ In argument acrosspourcentage_bio, round, 0.ℹ In group 1 trawling_depth  25 and species  Benthosema glaciale.Caused by warning The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE|
+density_distrubtion|function|20d2e38deda53872|||||||||||||||
+depth_distribution|stem|557c3f8ff857a42c|2b6cbacfc4ec32a4|804a2772413fcc1a|-689479444||t19895.5831615451s|04fcf8b2530d31e5|77|rds|local|vector|||2.89|Ignoring unknown parameters size|
+depth_distribution_plot|function|a3ff3ad56c8910f4|||||||||||||||
+diversity_index|stem|641767fb28df3ad7|4ffc80a50267c5be|617e22a52d2d643c|-942261501||t19894.4590993604s|394da78d38c90170|609|rds|local|vector|||9.62||
+diversity_index_calculation|function|7895fa4c8a419f64|||||||||||||||
 diversity_index_epi|stem|cd56da66bead5197|5697d3822a25aac2|983fbd43290ec82d|-772494934||t19748.4212277554s||208|rds|local|vector|||0.3||la condition est de longueur  1
 IDiversity|function|67feae79ed677236|||||||||||||||
-individuals_si|stem|a80243cb1709afad|4c575f9a543adfb9|3444a7b96eaba86f|-987925006||t19858.3836636397s|94aba81a4d2baa10|6428|rds|local|vector|||0.07||
+individuals_si|stem|0fb4b60653a98dc3|20bb7c2bd3fb0b16|db0ecae86685e837|-987925006||t19894.3744280035s|d0c1ee49decadd38|6457|rds|local|vector|||0.06||
 individuals_si_epi|stem|56ae8a4f650f2977|bc9aad99b3ebffac|aaec87c8706a881f|92296013||t19748.4000615368s|de32d31adcb9aa43|1105|rds|local|vector|||0.02||
-individuals_si_format|function|c051833fc0d7c098|||||||||||||||
+individuals_si_format|function|b24cae10cc178c20|||||||||||||||
 IOverlap|function|daa108a2ae515c3f|||||||||||||||
 isotope_data|stem|26815f948e624fd6|b28bd7ba65e0ad4e|2c530c1562a7fbd1|1528768678||t19850.3294032427s|c05177a0848e0f03|16246|rds|local|vector|||0.2||
-isotope_data_fish|stem|24a613d8b00d8fae|85c8bec5794f3f2c|2c530c1562a7fbd1|474299094||t19857.2820112847s|cf5e177c84c733ab|15725|rds|local|vector|||0.36||
+isotope_data_fish|stem|908278483c68061c|496bbec4b20ec611|2c530c1562a7fbd1|474299094||t19894.3229755056s|4b5217f01fef483c|15653|rds|local|vector|||0.47||
 isotope_data_si_div|stem|f0b642195a8c8f7d|9b122c325b4fae17|75a7401152d1bc28|257438199||t19748.364242326s|7c8d6ee61e470770|5099|rds|local|vector|||0.03||
 isotopic_space|function|ead1325fb6ac155a|||||||||||||||
-k_means_cluster|function|0ad38e4f8ced9b70|||||||||||||||
+k_means_cluster|function|bb3033105210f451|||||||||||||||
 meansexy|function|724e3be570abb2f3|||||||||||||||
 meanSI_group|function|f6abf5aeb6bfdc86|||||||||||||||
-median_depth|stem|105845f46d3f668b|266d2a6f653be36b|9bee5c8e6ad353b5|-556982294||t19850.3448802209s|0785c9db904d4ad3|435|rds|local|vector|||0.01||
-median_depth_sp|function|f6b02ccfe247fe42|||||||||||||||
+median_depth|stem|bd5f853dcad6b224|266d2a6f653be36b|2b90b29948057f4f|-556982294||t19894.631951752s|266c0e3d4338ce52|437|rds|local|vector|||0||
+median_depth_sp|function|fc6e64b4578a8409|||||||||||||||
 nb_cluster|function|e555d3f465cc5094|||||||||||||||
-nb_cluster_gs|stem|a8f71c9b897bb212|bd46e9228a25e52e|f7f5ce054afefa7e|-1246097731||t19850.3449174742s|4be831169559909a|74|rds|local|vector|||1.56||
+nb_cluster_gs|stem|2b910056d4597166|bd46e9228a25e52e|97506d475db3ed3f|-1246097731||t19894.6349108927s|a057b906461a46f0|75|rds|local|vector|||2.85||
 niche_area|function|4b9596d1fe10903e|||||||||||||||
 niche_area_boot|function|da68e4e590263dda|||||||||||||||
-niche_area_sp|stem|43a77f57b54dc9c5|501c049decba6586|c4742317d2c2497c|353891150||t19857.6673366169s|e5403c57657c131e|84|rds|local|vector|||2783.74|Using size aesthetic for lines was deprecated in ggplot2 3.4.0.ℹ Please use linewidth instead.. The dotdot notation ..count.. was deprecated in ggplot2 3.4.0.ℹ Please use after_statcount instead.|
+niche_area_sp|stem|dadb03b7784e78ec|501c049decba6586|3dbd5bca64b6c711|353891150||t19895.4190393788s|afe1c0564fcfafab|85|rds|local|vector|||2223.26||
+niche_cluster|stem|4ea9d29898b8a644|1ca4e2c786c8d3ec|f3b234e8fafc41df|129895049||t19894.5039280288s|abfed6147cb58a5b|79|rds|local|vector|||2.14||
 niche_community_plot_png|stem||d2d405bb07c2b8f0|da04395e488d3ac6|142949657||t19773.4336881534s||0|file|local|vector|||0.19||objet plot_niche_community introuvable
 niche_plot_community|function|b67f333aac4b2770|||||||||||||||
 nm_si|object|dd540eda5c0fa17f|||||||||||||||
@@ -40,12 +41,13 @@ null_model_niche_area|function|7c4354b6a48e040f|||||||||||||||
 null_model_overlap|function|80e0d59a2834f48f|||||||||||||||
 overlap_matrix|function|6ed5558d347a53bb|||||||||||||||
 overlap_matrix_plot|function|57f1a4cba51d9c26|||||||||||||||
-overlap_mx|stem|6bf54ca95c27b477|2f3b7b7c4c926864|04e2fb06c88ffe36|2046005696||t19850.3294626313s|53de3a85fe7caba1|802|rds|local|vector|||1.65||
+overlap_mx|stem|2974750b09c430e4|2f3b7b7c4c926864|e26c02a16c0412c0|2046005696||t19894.3230392313s|181d8984a83843ea|804|rds|local|vector|||5.4|There was 1 warning in mutate.ℹ In argument acrosswhereis.numeric, round, 2.Caused by warning The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE|
 overlap_mx_plot|stem|ff13516c29b41f1d|528a66907eb1837c|a155479edf3c82cf|-1737866654||t19747.6604107045s|b24c3eae4f512946|797|rds|local|vector|||3.07|1m22mThere was 1 warning in mutate.1m22m36mℹ39m In argument acrosswhereis.numeric, round, 2.Caused by warning1m22m33m39m The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE|
-overlap_sp|stem|ae960389aac34c3b|1023f99f999d4046|89d91502852c7690|-70606180||t19857.5168375328s|edb5491f686fb474|82|rds|local|vector|||19944|There was 1 warning in mutate.ℹ In argument acrosswhereis.numeric, round, 2.Caused by warning The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE. Using size aesthetic for lines was deprecated in ggplot2 3.4.0.ℹ Please use linewidth instead.. The dotdot notation ..count.. was deprecated in ggplot2 3.4.0.ℹ Please use after_statcount instead.|
-PCA|stem|9c40361698f44b85|02cc35a8659ee3f4|b83e142353122a2e|-1408550969||t19858.3837948898s|4d3508554cc2b0df|67|rds|local|vector|||2.27||
+overlap_sp|stem|21d4ee752aaa61e8|1023f99f999d4046|3680ec6aa8848324|-70606180||t19895.3933069009s|988429bb6428792b|83|rds|local|vector|||47249.3|There was 1 warning in mutate.ℹ In argument acrosswhereis.numeric, round, 2.Caused by warning The ... argument of across is deprecated as of dplyr 1.1.0.Supply arguments directly to .fns through an anonymous function instead.   Previously  acrossab, mean, na.rm  TRUE   Now  acrossab, \x meanx, na.rm  TRUE. Using size aesthetic for lines was deprecated in ggplot2 3.4.0.ℹ Please use linewidth instead.. The dotdot notation ..count.. was deprecated in ggplot2 3.4.0.ℹ Please use after_statcount instead.|
+PCA|stem|ab72a8244dbf9595|02cc35a8659ee3f4|5677c342b798550b|-1408550969||t19894.4995101972s|6dba06bb5782f84f|68|rds|local|vector|||2.45||
 plot_densdrogram|function|a428f10c46ed7b14|||||||||||||||
-plot_matrix|stem|8b6ffdf32388164a|2ad9857dba94bf9e|1ac809d53bb54db5|818357144||t19858.3057306825s|d22c29dc585b97b0|78|rds|local|vector|||1.22||
+plot_matrix|stem|12eace0d1677e065|2ad9857dba94bf9e|568e3f48f4c675f0|818357144||t19894.4963418887s|abfed6147cb58a5b|79|rds|local|vector|||1.47||
+plot_niche_cluster|function|c77d24f2d860eafe|||||||||||||||
 prepare_data|function|87c43c9e14b0428c|||||||||||||||
 save_niche_plot|stem|3ddc37e60873b054|b2e7ee95173824d8|cbd613c030950726|836624084||t19747.5737175603s||84|rds|local|vector|||0.03||operator is invalid for atomic vectors
 save_plot|function|725a7358a707daf9|||||||||||||||
@@ -54,9 +56,10 @@ scl_tit_d13C|object|ad2d5b54d0b047a8|||||||||||||||
 scl_tit_d15N|object|f9c1aebae6cdd53e|||||||||||||||
 scl_tit_d34S|object|db10c5e58e1c2ea0|||||||||||||||
 scl_tit_dD|object|074b25957550f6d0|||||||||||||||
-sp_status_biomass_format|function|a47fe1ab4dd27b90|||||||||||||||
-species_niche|stem|50ec59871f78ae69|527490b6d4449a4b|d694d44ccc7ef38d|1768935942||t19871.2860702574s|87bbe5f41aaaedf6|80|rds|local|vector|||3.48||
-species_status_biomass|stem|39b86d83d6f7541b|676160bf93b14646|d71f513107725d6a|1395945298||t19858.3836620497s|5a9618f08a81ac8e|1105|rds|local|vector|||0.1||
+sp_status_biomass_format|function|78b8e89348ca8ef1|||||||||||||||
+Species_code|stem|8843df42d6e2efeb|8b052fd07eaf2769|2c530c1562a7fbd1|-311762646||t19894.3229759171s|1ddaef4c1e4040ac|462|rds|local|vector|||0||
+species_niche|stem|1f1875b88f58e1bf|527490b6d4449a4b|e3ff0e7ee33d6da4|1768935942||t19894.4956680056s|4179e472436f3418|81|rds|local|vector|||2.15||
+species_status_biomass|stem|4c5a90c370b5cb08|a9a7c61015801704|aed58f3b264e4abd|1395945298||t19894.3727144487s|1567da7096352c5b|1097|rds|local|vector|||0.07||
 status_biomass_epi|stem|0d73c3bd3a59c9c4|dbd2d4191b2d262a|69515d2b074cf938|847325598||t19748.4000617487s|44634ed83313222b|470|rds|local|vector|||0.03||
 sum_overlap|function|6d668835736ec118|||||||||||||||
 sum_overlap_boot|function|f6fc84d003848f56|||||||||||||||
@@ -64,4 +67,4 @@ tit_d13C|object|44125f9b587671b7|||||||||||||||
 tit_d15N|object|941852f5e9f8b4f0|||||||||||||||
 tit_d34S|object|3ded6ae266b71577|||||||||||||||
 tit_dD|object|2e6a09741c1280d9|||||||||||||||
-trawling_data|stem|0f1e800bfbcf5374|2594c582e78c4e48|2c530c1562a7fbd1|844277721||t19850.3294092944s|a11fddbef7a559f5|449254|rds|local|vector|||0.36||
+trawling_data|stem|b423e0d98cf50c04|481dc160fb43ed39|2c530c1562a7fbd1|844277721||t19894.3433529969s|b5302ce55dcf6817|2137|rds|local|vector|||0.23||

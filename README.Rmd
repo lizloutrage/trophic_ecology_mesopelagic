@@ -8,14 +8,21 @@ output: github_document
 [![License: GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://choosealicense.com/licenses/gpl-2.0/)
 <!-- badges: end -->
 
-The aim of the `trophic_ecology_mesopelagic` project is to reproduce analysis performed is the paper by Loutrage et al., . 
+The aim of the `trophic_ecology_mesopelagic` project is to reproduce analysis performed is the paper by Loutrage et al.,2024 . 
+
+## Data:
+
+All raw data are available in the online directory data.InDoRES platform https://data.indores.fr/ (any use must include the reference and DOI):  
+
+- DOI of the trawling data set: https://doi.org/10.48579/PRO/AIKOEB
+- DOI of the isotopic data set: https://doi.org/10.48579/PRO/D7MBHB 
 
 ## Overview
 
 Here is an overview of `trophic_ecology_mesopelagic` content: 
 
 -  [`data/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/data):
-contains all raw data required to perform analyses
+contains all raw data required to perform analyses 
 
 -  [`R/`](https://github.com/lizloutrage/trophic_ecology_mesopelagic/tree/main/R):
   contains the functions to run the analysis  

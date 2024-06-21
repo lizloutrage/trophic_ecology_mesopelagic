@@ -39,7 +39,7 @@ niche_plot_community <- function(data) {
     "#5F7F57", "#6CA086", "#344B47", "#9256DD"
   )
   
-ggplot(data = data_plot, 
+ggplot(data = data_plot,
          aes(x = d13c, 
              y = d15n)) + 
     geom_point(aes(color = species), size =1) +

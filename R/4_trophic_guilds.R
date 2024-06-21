@@ -27,9 +27,16 @@ factoextra::fviz_nbclust(
 #'
 #' @param overlap_matrix 
 
-k_means_cluster <- function(overlap_matrix){
- res_km <-  kmeans(scale(overlap_matrix), 5, nstart = 25)
- return(res_km$cluster)
+k_means_cluster <- function(data){
+ res_km <-  kmeans(scale(data), 5, nstart = 25)
+ res_km_df <- res_km$cluster %>% 
+   as.data.frame() %>% 
+   rename(cluster = ".") %>% 
+   tibble::rownames_to_column(var = "species")%>% 
+   mutate(species = stringr::str_trim(species)) %>%
+   mutate(species = as.character(species))
+ 
+ return(res_km_df)
 } 
 
 
@@ -81,7 +88,6 @@ dend %>%
   plot(horiz = TRUE, axes = FALSE)
 
 dev.off()
-#dev.off()
 }
 
 #' plot species depth distribution 
@@ -89,50 +95,20 @@ dev.off()
 #' @param density_distribution 
 #'
 
-depth_distribution_plot <- function(density_distribution){
+depth_distribution_plot <- function(density_distribution_data, cluster_definition){
   
-  # assign each species to a cluster (define above)
-  # /!\ to be modified to be more reproducible 
-density_distribution_cluster <- density_distribution %>%
-  mutate(
-    cluster = case_when(
-      Nom_Scientifique %in% c(
-        "Argyropelecus olfersii",
-        "Lampanyctus crocodilus",
-        "Benthosema glaciale"
-      ) ~ 1,
-      Nom_Scientifique %in% c(
-        "Lampanyctus macdonaldi",
-        "Maulisia argipalla",
-        "Searsia koefoedi"
-      ) ~ 3,
-      Nom_Scientifique %in% c(
-        "Cyclothone spp.",
-        "Notoscopelus bolini",
-        "Notoscopelus kroyeri",
-        "Melanostigma atlanticum"
-      ) ~ 2,
-      Nom_Scientifique %in% c(
-        "Xenodermichthys copei",
-        "Serrivomer beanii",
-        "Myctophum punctatum",
-        "Maurolicus muelleri"
-      ) ~ 5,
-      Nom_Scientifique %in% c("Arctozenus risso", "Lestidiops sphyrenoides") ~ 4
-    )
-  )%>%
-  group_by(Nom_Scientifique) %>%
-  arrange(desc(trawling_depth))
+  density_distribution_cluster <- density_distribution_data %>%
+    left_join(cluster_definition, by = "species")
 
 # Order in function of median depth
-density_distribution_cluster$Nom_Scientifique = with(density_distribution_cluster, reorder(Nom_Scientifique, cluster, max))  
+density_distribution_cluster$species = with(density_distribution_cluster, reorder(species, cluster, max))  
 
 # plot
 ggplot(density_distribution_cluster,
-       aes(x = trawling_depth, y = Nom_Scientifique, group = Nom_Scientifique, 
+       aes(x = trawling_depth, y = species, group = species, 
            col=factor(cluster), fill=factor(cluster)))+ 
-  scale_fill_manual(values = c("#86BBBD","#ECA72C", "#4D85A8","#9BABE8","#D35D4A"))+
-  scale_color_manual(values = c("#86BBBD","#ECA72C", "#4D85A8","#9BABE8","#D35D4A"))+
+  scale_fill_manual(values = c("#ECA72C", "#4D85A8","#86BBBD","#D35D4A","#9BABE8"))+
+  scale_color_manual(values = c("#ECA72C", "#4D85A8","#86BBBD","#D35D4A","#9BABE8"))+
   ggridges::stat_density_ridges(quantile_lines = TRUE, quantiles = 0.5 , alpha=0.4, size=0.7,
                                 rel_min_height = 0.002, scale=1.2)+
   theme_bw()+
