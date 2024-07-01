@@ -8,7 +8,8 @@ GPL-2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://chooseal
 <!-- badges: end -->
 
 The aim of the `trophic_ecology_mesopelagic` project is to reproduce
-analysis performed is the paper by Loutrage et al.,2024 .
+analysis performed is the paper by Loutrage et al., 2024
+(<https://doi.org/10.1016/j.dsr.2024.104347>)
 
 ## Data:
 
