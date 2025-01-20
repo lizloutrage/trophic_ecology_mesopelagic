@@ -215,7 +215,7 @@ ggplot(results_df, aes(x = value)) +
   labs(x = "Isotopic niche size", y = "Frequency") +
   theme(
     strip.text.x = element_text(
-      size = 14,
+      size = 12.5,
       face = "bold",
       color = "gray20"
     ),

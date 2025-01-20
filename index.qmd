@@ -37,8 +37,8 @@ isotope_data <- targets::tar_read(isotope_data_fish) %>%
   group_by(species) %>%
   summarise(
     n = n(),
-    mean_d15N = round(mean(d15n), 2),
-    sd_d15N = round(sd(d15n), 2),
+    mean_d15N = round(mean(d15n),2 ),
+    sd_d15N = round(sd(d15n),2),
     mean_d13C = round(mean(d13c), 2),
     sd_d13C = round(sd(d13c), 2)
   )
